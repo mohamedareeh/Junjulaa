@@ -66,6 +66,10 @@ type EpisodeWithRelations = Episode & {
     title: string | null;
     description: string | null;
     locationId: number | null;
+    props: string | null;
+    timeOfDay: string | null;
+    duration: string | null;
+    continuitySceneId: number | null;
     cast: Array<{
       id: number;
       castMember: CastMember;
@@ -78,6 +82,20 @@ const statusColors: Record<string, string> = {
   filming: "bg-blue-100 text-blue-800",
   post_production: "bg-purple-100 text-purple-800",
   completed: "bg-green-100 text-green-800",
+};
+
+const timeOfDayColors: Record<string, string> = {
+  morning: "bg-yellow-100 text-yellow-800",
+  afternoon: "bg-orange-100 text-orange-800",
+  evening: "bg-purple-100 text-purple-800",
+  night: "bg-blue-100 text-blue-800",
+};
+
+const timeOfDayLabels: Record<string, string> = {
+  morning: "Morning",
+  afternoon: "Afternoon",
+  evening: "Evening",
+  night: "Night",
 };
 
 const statusLabels: Record<string, string> = {
@@ -299,6 +317,11 @@ export default async function EpisodeDetailPage({
                 episodeId={episode.id}
                 locations={allLocations}
                 castMembers={allCastMembers}
+                allScenes={episode.scenes.map((s) => ({
+                  id: s.id,
+                  sceneNumber: s.sceneNumber,
+                  title: s.title,
+                }))}
                 trigger={<Button variant="outline" size="sm">Add Scene</Button>}
               />
             </CardHeader>
@@ -331,6 +354,33 @@ export default async function EpisodeDetailPage({
                               {scene.description}
                             </p>
                           )}
+                          <div className="flex items-center gap-2 mt-1 flex-wrap">
+                            {scene.timeOfDay && (
+                              <Badge
+                                className={`text-xs ${timeOfDayColors[scene.timeOfDay] ?? ""}`}
+                              >
+                                {timeOfDayLabels[scene.timeOfDay] ?? scene.timeOfDay}
+                              </Badge>
+                            )}
+                            {scene.duration && (
+                              <span className="text-xs text-muted-foreground">
+                                Duration: {scene.duration}
+                              </span>
+                            )}
+                            {scene.continuitySceneId && (
+                              <span className="text-xs text-muted-foreground">
+                                Continues from Scene{" "}
+                                {episode.scenes.find(
+                                  (s) => s.id === scene.continuitySceneId
+                                )?.sceneNumber ?? scene.continuitySceneId}
+                              </span>
+                            )}
+                          </div>
+                          {scene.props && (
+                            <p className="text-xs text-muted-foreground mt-1">
+                              Props: {scene.props}
+                            </p>
+                          )}
                         </div>
                         <div className="flex items-center gap-1">
                           <SceneForm
@@ -342,9 +392,18 @@ export default async function EpisodeDetailPage({
                               description: scene.description,
                               locationId: scene.locationId,
                               castMemberIds: scene.cast.map((sc) => sc.castMember.id),
+                              props: scene.props,
+                              timeOfDay: scene.timeOfDay,
+                              duration: scene.duration,
+                              continuitySceneId: scene.continuitySceneId,
                             }}
                             locations={allLocations}
                             castMembers={allCastMembers}
+                            allScenes={episode.scenes.map((s) => ({
+                              id: s.id,
+                              sceneNumber: s.sceneNumber,
+                              title: s.title,
+                            }))}
                             trigger={
                               <Button variant="ghost" size="sm">
                                 Edit

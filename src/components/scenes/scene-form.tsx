@@ -36,9 +36,14 @@ interface SceneFormProps {
     description: string | null;
     locationId: number | null;
     castMemberIds: number[];
+    props: string | null;
+    timeOfDay: string | null;
+    duration: string | null;
+    continuitySceneId: number | null;
   };
   locations: { id: number; name: string }[];
   castMembers: { id: number; name: string }[];
+  allScenes?: { id: number; sceneNumber: number; title: string | null }[];
   trigger: React.ReactNode;
 }
 
@@ -47,6 +52,7 @@ export function SceneForm({
   scene,
   locations,
   castMembers,
+  allScenes,
   trigger,
 }: SceneFormProps) {
   const [open, setOpen] = useState(false);
@@ -56,6 +62,10 @@ export function SceneForm({
   );
   const [selectedCast, setSelectedCast] = useState<number[]>(
     scene?.castMemberIds ?? []
+  );
+  const [timeOfDay, setTimeOfDay] = useState(scene?.timeOfDay ?? "");
+  const [continuitySceneId, setContinuitySceneId] = useState(
+    scene?.continuitySceneId ? String(scene.continuitySceneId) : ""
   );
 
   function toggleCast(id: number) {
@@ -67,6 +77,8 @@ export function SceneForm({
   async function handleSubmit(formData: FormData) {
     formData.set("episodeId", String(episodeId));
     if (locationId) formData.set("locationId", locationId);
+    if (timeOfDay) formData.set("timeOfDay", timeOfDay);
+    if (continuitySceneId) formData.set("continuitySceneId", continuitySceneId);
     selectedCast.forEach((id) => formData.append("castMemberIds", String(id)));
 
     startTransition(async () => {
@@ -152,6 +164,73 @@ export function SceneForm({
                 rows={2}
               />
             </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="timeOfDay">Time of Day</Label>
+                <Select
+                  value={timeOfDay}
+                  onValueChange={(val) => setTimeOfDay(val ?? "")}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select time of day" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="morning">Morning</SelectItem>
+                    <SelectItem value="afternoon">Afternoon</SelectItem>
+                    <SelectItem value="evening">Evening</SelectItem>
+                    <SelectItem value="night">Night</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="duration">Duration</Label>
+                <Input
+                  id="duration"
+                  name="duration"
+                  defaultValue={scene?.duration ?? ""}
+                  placeholder="e.g., 2h 30m"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="props">Props</Label>
+              <Textarea
+                id="props"
+                name="props"
+                defaultValue={scene?.props ?? ""}
+                placeholder="List of props needed for this scene..."
+                rows={2}
+              />
+            </div>
+
+            {allScenes && allScenes.length > 0 && (
+              <div className="space-y-2">
+                <Label htmlFor="continuitySceneId">Continuity</Label>
+                <Select
+                  value={continuitySceneId}
+                  onValueChange={(val) =>
+                    setContinuitySceneId(val === "none" ? "" : val ?? "")
+                  }
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Continues from scene..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">None</SelectItem>
+                    {allScenes
+                      .filter((s) => !scene || s.id !== scene.id)
+                      .map((s) => (
+                        <SelectItem key={s.id} value={String(s.id)}>
+                          Scene {s.sceneNumber}
+                          {s.title ? ` — ${s.title}` : ""}
+                        </SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
 
             <div className="space-y-2">
               <Label>Cast in this Scene</Label>

@@ -13,11 +13,22 @@ export async function createScene(formData: FormData) {
   const locationId = formData.get("locationId")
     ? Number(formData.get("locationId"))
     : null;
+  const props = (formData.get("props") as string) || null;
+  const timeOfDay = (formData.get("timeOfDay") as string) as
+    | "morning"
+    | "afternoon"
+    | "evening"
+    | "night"
+    | null || null;
+  const duration = (formData.get("duration") as string) || null;
+  const continuitySceneId = formData.get("continuitySceneId")
+    ? Number(formData.get("continuitySceneId"))
+    : null;
   const castMemberIds = formData.getAll("castMemberIds").map(Number);
 
   const [scene] = await db
     .insert(scenes)
-    .values({ episodeId, sceneNumber, title, description, locationId })
+    .values({ episodeId, sceneNumber, title, description, locationId, props, timeOfDay, duration, continuitySceneId })
     .returning();
 
   if (castMemberIds.length > 0) {
@@ -37,11 +48,22 @@ export async function updateScene(sceneId: number, formData: FormData) {
   const locationId = formData.get("locationId")
     ? Number(formData.get("locationId"))
     : null;
+  const props = (formData.get("props") as string) || null;
+  const timeOfDay = (formData.get("timeOfDay") as string) as
+    | "morning"
+    | "afternoon"
+    | "evening"
+    | "night"
+    | null || null;
+  const duration = (formData.get("duration") as string) || null;
+  const continuitySceneId = formData.get("continuitySceneId")
+    ? Number(formData.get("continuitySceneId"))
+    : null;
   const castMemberIds = formData.getAll("castMemberIds").map(Number);
 
   await db
     .update(scenes)
-    .set({ sceneNumber, title, description, locationId })
+    .set({ sceneNumber, title, description, locationId, props, timeOfDay, duration, continuitySceneId })
     .where(eq(scenes.id, sceneId));
 
   // Replace cast assignments

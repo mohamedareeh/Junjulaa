@@ -50,6 +50,13 @@ export const paymentTypeEnum = pgEnum("payment_type", [
   "per_episode",
 ]);
 
+export const timeOfDayEnum = pgEnum("time_of_day", [
+  "morning",
+  "afternoon",
+  "evening",
+  "night",
+]);
+
 export const documentTypeEnum = pgEnum("document_type", [
   "script",
   "contract",
@@ -223,6 +230,10 @@ export const scenes = pgTable("scenes", {
   title: varchar("title", { length: 255 }),
   description: text("description"),
   locationId: integer("location_id").references(() => locations.id),
+  props: text("props"),
+  timeOfDay: timeOfDayEnum("time_of_day"),
+  duration: varchar("duration", { length: 50 }),
+  continuitySceneId: integer("continuity_scene_id"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -235,6 +246,31 @@ export const sceneCast = pgTable("scene_cast", {
     .notNull()
     .references(() => castMembers.id, { onDelete: "cascade" }),
   notes: text("notes"),
+});
+
+export const costumes = pgTable("costumes", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 255 }).notNull(),
+  description: text("description"),
+  photoUrl: text("photo_url"),
+  castMemberId: integer("cast_member_id").references(() => castMembers.id, {
+    onDelete: "set null",
+  }),
+  episodeId: integer("episode_id").references(() => episodes.id, {
+    onDelete: "set null",
+  }),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const costumeScenes = pgTable("costume_scenes", {
+  id: serial("id").primaryKey(),
+  costumeId: integer("costume_id")
+    .notNull()
+    .references(() => costumes.id, { onDelete: "cascade" }),
+  sceneId: integer("scene_id")
+    .notNull()
+    .references(() => scenes.id, { onDelete: "cascade" }),
 });
 
 export const activityLog = pgTable("activity_log", {
@@ -343,6 +379,29 @@ export const episodeLocationsRelations = relations(
   })
 );
 
+export const costumesRelations = relations(costumes, ({ one, many }) => ({
+  castMember: one(castMembers, {
+    fields: [costumes.castMemberId],
+    references: [castMembers.id],
+  }),
+  episode: one(episodes, {
+    fields: [costumes.episodeId],
+    references: [episodes.id],
+  }),
+  scenes: many(costumeScenes),
+}));
+
+export const costumeScenesRelations = relations(costumeScenes, ({ one }) => ({
+  costume: one(costumes, {
+    fields: [costumeScenes.costumeId],
+    references: [costumes.id],
+  }),
+  scene: one(scenes, {
+    fields: [costumeScenes.sceneId],
+    references: [scenes.id],
+  }),
+}));
+
 export const schedulesRelations = relations(schedules, ({ one }) => ({
   episode: one(episodes, {
     fields: [schedules.episodeId],
@@ -387,6 +446,7 @@ export type Budget = typeof budgets.$inferSelect;
 export type Location = typeof locations.$inferSelect;
 export type Schedule = typeof schedules.$inferSelect;
 export type Document = typeof documents.$inferSelect;
+export type Costume = typeof costumes.$inferSelect;
 export type ExpenseCategory = typeof expenseCategories.$inferSelect;
 export type Scene = typeof scenes.$inferSelect;
 export type NewScene = typeof scenes.$inferInsert;

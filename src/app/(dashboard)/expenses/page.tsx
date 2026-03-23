@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/table";
 import { ExpenseForm } from "@/components/expenses/expense-form";
 import { ExpenseFilters } from "@/components/expenses/expense-filters";
+import { DeleteExpenseButton } from "@/components/expenses/delete-expense-button";
 import { formatCurrency } from "@/lib/format";
 
 const statusColors: Record<string, string> = {
@@ -195,13 +196,14 @@ export default async function ExpensesPage({
                 <TableHead className="text-right">Amount</TableHead>
                 <TableHead>Type</TableHead>
                 <TableHead>Status</TableHead>
+                <TableHead className="w-[50px]">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {expenseRows.length === 0 ? (
                 <TableRow>
                   <TableCell
-                    colSpan={7}
+                    colSpan={8}
                     className="text-center text-muted-foreground py-8"
                   >
                     No expenses found. Add your first expense to get started.
@@ -241,6 +243,9 @@ export default async function ExpensesPage({
                       >
                         {statusLabels[row.paymentStatus] ?? row.paymentStatus}
                       </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <DeleteExpenseButton id={row.id} />
                     </TableCell>
                   </TableRow>
                 ))

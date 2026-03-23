@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/table";
 import { Progress } from "@/components/ui/progress";
 import { BudgetForm } from "@/components/expenses/budget-form";
+import { DeleteBudgetButton } from "@/components/expenses/delete-budget-button";
 import { formatCurrency } from "@/lib/format";
 
 const categoryLabels: Record<string, string> = {
@@ -47,6 +48,7 @@ function getProgressColor(percentage: number): string {
 }
 
 interface BudgetRow {
+  id: number;
   category: string;
   allocated: number;
   spent: number;
@@ -119,7 +121,7 @@ export default async function BudgetPage() {
       const percentage = allocated > 0 ? (spent / allocated) * 100 : 0;
       grandTotalAllocated += allocated;
       grandTotalSpent += spent;
-      return { category: b.category, allocated, spent, remaining, percentage };
+      return { id: b.id, category: b.category, allocated, spent, remaining, percentage };
     });
 
     // Per-episode budgets
@@ -138,6 +140,7 @@ export default async function BudgetPage() {
         totalAllocated += allocated;
         totalSpent += spent;
         return {
+          id: b.id,
           category: b.category,
           allocated,
           spent,
@@ -304,6 +307,7 @@ function BudgetTable({ rows }: { rows: BudgetRow[] }) {
           <TableHead className="text-right">Spent</TableHead>
           <TableHead className="text-right">Remaining</TableHead>
           <TableHead className="text-right">% Used</TableHead>
+          <TableHead className="w-[50px]">Actions</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -325,6 +329,9 @@ function BudgetTable({ rows }: { rows: BudgetRow[] }) {
               className={`text-right tabular-nums font-medium ${getStatusColor(row.percentage)}`}
             >
               {row.percentage.toFixed(1)}%
+            </TableCell>
+            <TableCell>
+              <DeleteBudgetButton id={row.id} />
             </TableCell>
           </TableRow>
         ))}

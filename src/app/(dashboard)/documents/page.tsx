@@ -17,6 +17,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { DocumentForm } from "@/components/documents/document-form";
+import { DeleteDocumentButton } from "@/components/documents/delete-document-button";
 import { FileTextIcon } from "lucide-react";
 
 const typeColors: Record<string, string> = {
@@ -176,13 +177,14 @@ export default async function DocumentsPage({
                 <TableHead>Episode</TableHead>
                 <TableHead className="text-center">Version</TableHead>
                 <TableHead>Uploaded</TableHead>
+                <TableHead className="w-[50px]" />
               </TableRow>
             </TableHeader>
             <TableBody>
               {documentRows.length === 0 ? (
                 <TableRow>
                   <TableCell
-                    colSpan={5}
+                    colSpan={6}
                     className="text-center text-muted-foreground py-8"
                   >
                     <div className="flex flex-col items-center gap-2">
@@ -222,6 +224,9 @@ export default async function DocumentsPage({
                     </TableCell>
                     <TableCell className="text-muted-foreground whitespace-nowrap">
                       {format(doc.createdAt, "MMM d, yyyy")}
+                    </TableCell>
+                    <TableCell>
+                      <DeleteDocumentButton id={doc.id} />
                     </TableCell>
                   </TableRow>
                 ))

@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { EpisodeForm } from "@/components/episodes/episode-form";
 import Link from "next/link";
+import { DeleteEpisodeButton } from "@/components/episodes/delete-episode-button";
 import type { Episode } from "@/db/schema";
 
 const statusColors: Record<string, string> = {
@@ -64,8 +65,8 @@ export default async function EpisodesPage() {
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {allEpisodes.map((ep) => (
-            <Link key={ep.id} href={`/episodes/${ep.id}`}>
-              <Card className="transition-shadow hover:shadow-md h-full">
+            <Card key={ep.id} className="transition-shadow hover:shadow-md h-full relative group">
+              <Link href={`/episodes/${ep.id}`}>
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
                     <CardDescription className="text-xs font-medium">
@@ -102,8 +103,11 @@ export default async function EpisodesPage() {
                     </p>
                   )}
                 </CardContent>
-              </Card>
-            </Link>
+              </Link>
+              <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <DeleteEpisodeButton id={ep.id} />
+              </div>
+            </Card>
           ))}
         </div>
       )}

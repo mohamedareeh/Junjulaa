@@ -19,7 +19,8 @@
       "Bash(node -e \"import\\(''bcryptjs''\\).then\\(m => console.log\\(''default:'', typeof m.default, ''compare:'', typeof m.compare, ''keys:'', Object.keys\\(m\\).slice\\(0,10\\)\\)\\);\")",
       "Bash(node -e \"import\\(''bcryptjs''\\).then\\(m => console.log\\(''default.compare:'', typeof m.default.compare\\)\\);\")",
       "Bash(ls -la /Users/mohamedareeh/JuneJunal/src/app/page.tsx /Users/mohamedareeh/JuneJunal/src/app/\\\\\\(dashboard\\\\\\)/page.tsx)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(git commit:*)"
     ]
   }
 }

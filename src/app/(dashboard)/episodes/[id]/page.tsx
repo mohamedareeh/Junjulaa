@@ -40,6 +40,7 @@ import {
 } from "@/components/ui/tabs";
 import { EpisodeForm } from "@/components/episodes/episode-form";
 import { SceneForm } from "@/components/scenes/scene-form";
+import { DeleteSceneButton } from "@/components/scenes/delete-scene-button";
 import { formatCurrency } from "@/lib/format";
 import Link from "next/link";
 
@@ -331,24 +332,27 @@ export default async function EpisodeDetailPage({
                             </p>
                           )}
                         </div>
-                        <SceneForm
-                          episodeId={episode.id}
-                          scene={{
-                            id: scene.id,
-                            sceneNumber: scene.sceneNumber,
-                            title: scene.title,
-                            description: scene.description,
-                            locationId: scene.locationId,
-                            castMemberIds: scene.cast.map((sc) => sc.castMember.id),
-                          }}
-                          locations={allLocations}
-                          castMembers={allCastMembers}
-                          trigger={
-                            <Button variant="ghost" size="sm">
-                              Edit
-                            </Button>
-                          }
-                        />
+                        <div className="flex items-center gap-1">
+                          <SceneForm
+                            episodeId={episode.id}
+                            scene={{
+                              id: scene.id,
+                              sceneNumber: scene.sceneNumber,
+                              title: scene.title,
+                              description: scene.description,
+                              locationId: scene.locationId,
+                              castMemberIds: scene.cast.map((sc) => sc.castMember.id),
+                            }}
+                            locations={allLocations}
+                            castMembers={allCastMembers}
+                            trigger={
+                              <Button variant="ghost" size="sm">
+                                Edit
+                              </Button>
+                            }
+                          />
+                          <DeleteSceneButton sceneId={scene.id} episodeId={episode.id} />
+                        </div>
                       </div>
                       {scene.cast.length > 0 && (
                         <div className="flex items-center gap-2 flex-wrap">

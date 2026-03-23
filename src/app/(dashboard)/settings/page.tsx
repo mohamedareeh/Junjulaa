@@ -17,6 +17,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { UserForm } from "@/components/settings/user-form";
+import { DeleteUserButton } from "@/components/settings/delete-user-button";
 import { UsersIcon } from "lucide-react";
 
 const roleColors: Record<string, string> = {
@@ -106,14 +107,17 @@ export default async function SettingsPage() {
                       {format(user.createdAt, "MMM d, yyyy")}
                     </TableCell>
                     <TableCell>
-                      <UserForm
-                        user={user}
-                        trigger={
-                          <Button variant="ghost" size="sm">
-                            Edit
-                          </Button>
-                        }
-                      />
+                      <div className="flex items-center gap-1">
+                        <UserForm
+                          user={user}
+                          trigger={
+                            <Button variant="ghost" size="sm">
+                              Edit
+                            </Button>
+                          }
+                        />
+                        <DeleteUserButton id={user.id} />
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))

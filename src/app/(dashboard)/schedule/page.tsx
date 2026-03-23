@@ -11,6 +11,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScheduleForm } from "@/components/schedule/schedule-form";
+import { DeleteScheduleButton } from "@/components/schedule/delete-schedule-button";
 import { CalendarIcon, ClockIcon } from "lucide-react";
 
 export default async function SchedulePage() {
@@ -167,6 +168,7 @@ export default async function SchedulePage() {
                           {entry.wrapTime && (
                             <span>{entry.wrapTime.slice(0, 5)}</span>
                           )}
+                          <DeleteScheduleButton id={entry.id} />
                         </div>
                       </CardContent>
                     </Card>

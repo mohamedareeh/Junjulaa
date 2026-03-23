@@ -10,6 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { LocationForm } from "@/components/locations/location-form";
 import { formatCurrency } from "@/lib/format";
+import { DeleteLocationButton } from "@/components/locations/delete-location-button";
 import { MapPinIcon, DollarSignIcon, CalendarIcon } from "lucide-react";
 
 export default async function LocationsPage() {
@@ -78,27 +79,29 @@ export default async function LocationsPage() {
                   <CardTitle className="text-lg leading-tight">
                     {loc.name}
                   </CardTitle>
-                  <LocationForm
-                    location={{
-                      id: loc.id,
-                      name: loc.name,
-                      address: loc.address,
-                      photos: loc.photos,
-                      permitInfo: loc.permitInfo,
-                      costPerDay: loc.costPerDay,
-                      notes: loc.notes,
-                      createdAt: loc.createdAt,
-                    }}
-                    trigger={
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="opacity-0 group-hover:opacity-100 transition-opacity"
-                      >
-                        Edit
-                      </Button>
-                    }
-                  />
+                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <LocationForm
+                      location={{
+                        id: loc.id,
+                        name: loc.name,
+                        address: loc.address,
+                        photos: loc.photos,
+                        permitInfo: loc.permitInfo,
+                        costPerDay: loc.costPerDay,
+                        notes: loc.notes,
+                        createdAt: loc.createdAt,
+                      }}
+                      trigger={
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                        >
+                          Edit
+                        </Button>
+                      }
+                    />
+                    <DeleteLocationButton id={loc.id} />
+                  </div>
                 </div>
               </CardHeader>
               <CardContent className="space-y-3">

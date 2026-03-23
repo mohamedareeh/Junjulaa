@@ -9,6 +9,7 @@ import bcrypt from "bcryptjs";
 export async function createUser(formData: FormData) {
   try {
     const name = formData.get("name") as string;
+    const username = formData.get("username") as string;
     const email = formData.get("email") as string;
     const password = formData.get("password") as string;
     const role = formData.get("role") as "producer" | "director" | "crew";
@@ -17,6 +18,7 @@ export async function createUser(formData: FormData) {
 
     await db.insert(users).values({
       name,
+      username,
       email,
       passwordHash,
       role,
@@ -32,22 +34,24 @@ export async function createUser(formData: FormData) {
 export async function updateUser(id: number, formData: FormData) {
   try {
     const name = formData.get("name") as string;
+    const username = formData.get("username") as string;
     const email = formData.get("email") as string;
     const password = formData.get("password") as string;
     const role = formData.get("role") as "producer" | "director" | "crew";
 
     const updateData: {
       name: string;
+      username: string;
       email: string;
       role: "producer" | "director" | "crew";
       passwordHash?: string;
     } = {
       name,
+      username,
       email,
       role,
     };
 
-    // Only update password if a new one was provided
     if (password) {
       updateData.passwordHash = await bcrypt.hash(password, 10);
     }

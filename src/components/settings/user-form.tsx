@@ -83,6 +83,17 @@ export function UserForm({ user, trigger }: UserFormProps) {
           </div>
 
           <div className="space-y-2">
+            <Label htmlFor="username">Username</Label>
+            <Input
+              id="username"
+              name="username"
+              required
+              defaultValue={user?.username ?? ""}
+              placeholder="username"
+            />
+          </div>
+
+          <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
             <Input
               id="email"

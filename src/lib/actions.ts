@@ -6,7 +6,7 @@ import { AuthError } from "next-auth";
 export async function loginAction(formData: FormData) {
   try {
     await signIn("credentials", {
-      email: formData.get("email") as string,
+      username: formData.get("username") as string,
       password: formData.get("password") as string,
       redirectTo: "/",
     });
@@ -14,7 +14,7 @@ export async function loginAction(formData: FormData) {
     if (error instanceof AuthError) {
       switch (error.type) {
         case "CredentialsSignin":
-          return { error: "Invalid email or password." };
+          return { error: "Invalid username or password." };
         default:
           return { error: "Something went wrong." };
       }

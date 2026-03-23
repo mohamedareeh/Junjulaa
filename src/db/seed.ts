@@ -16,18 +16,21 @@ async function seed() {
   await db.insert(schema.users).values([
     {
       name: "Producer Admin",
+      username: "admin",
       email: "admin@junejunal.com",
       passwordHash,
       role: "producer",
     },
     {
       name: "Director One",
+      username: "director",
       email: "director@junejunal.com",
       passwordHash,
       role: "director",
     },
     {
       name: "Crew Member",
+      username: "crew",
       email: "crew@junejunal.com",
       passwordHash,
       role: "crew",

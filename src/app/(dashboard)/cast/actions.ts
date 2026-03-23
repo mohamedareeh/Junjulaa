@@ -2,9 +2,33 @@
 
 import { db } from "@/db";
 import { castMembers, users } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { hash } from "bcryptjs";
+
+function generateUsername(name: string): string {
+  return name.toLowerCase().replace(/\s+/g, ".").replace(/[^a-z0-9.]/g, "");
+}
+
+async function getUniqueUsername(base: string): Promise<string> {
+  const [existing] = await db
+    .select({ count: sql<number>`count(*)` })
+    .from(users)
+    .where(eq(users.username, base));
+
+  if (existing.count === 0) return base;
+
+  // Append a number
+  for (let i = 2; i <= 100; i++) {
+    const candidate = `${base}${i}`;
+    const [check] = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(users)
+      .where(eq(users.username, candidate));
+    if (check.count === 0) return candidate;
+  }
+  return `${base}${Date.now()}`;
+}
 
 async function ensureUserAccount(name: string, email: string, castMemberId: number) {
   const [existingUser] = await db
@@ -19,10 +43,11 @@ async function ensureUserAccount(name: string, email: string, castMemberId: numb
       .set({ userId: existingUser.id })
       .where(eq(castMembers.id, castMemberId));
   } else {
+    const username = await getUniqueUsername(generateUsername(name));
     const passwordHash = await hash("password123", 10);
     const [newUser] = await db
       .insert(users)
-      .values({ name, email, passwordHash, role: "crew" })
+      .values({ name, username, email, passwordHash, role: "crew" })
       .returning();
 
     await db
@@ -64,7 +89,6 @@ export async function updateCastMember(id: number, formData: FormData) {
     .set({ name, email, phone, bio, dayRate, paymentType })
     .where(eq(castMembers.id, id));
 
-  // Auto-create user account if email is provided and no userId linked
   if (email) {
     const [member] = await db
       .select({ userId: castMembers.userId })

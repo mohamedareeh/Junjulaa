@@ -44,16 +44,16 @@ export default function LoginPage() {
         <div className="card-shadow-lg rounded-2xl bg-white p-6">
           <form action={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-[13px] font-medium text-gray-700">
-                Email
+              <Label htmlFor="username" className="text-[13px] font-medium text-gray-700">
+                Username
               </Label>
               <Input
-                id="email"
-                name="email"
-                type="email"
-                placeholder="you@example.com"
+                id="username"
+                name="username"
+                type="text"
+                placeholder="Enter your username"
                 required
-                autoComplete="email"
+                autoComplete="username"
                 className="h-11 rounded-xl border-gray-200 bg-gray-50 text-sm placeholder:text-gray-400 focus:border-gray-400 focus:ring-gray-400/20"
               />
             </div>

@@ -24,6 +24,7 @@ export default async function SettingsPage() {
   let userRows: {
     id: number;
     name: string;
+    username: string;
     email: string;
     passwordHash: string;
     role: "producer" | "director" | "crew";
@@ -69,7 +70,7 @@ export default async function SettingsPage() {
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-[13px] font-medium text-gray-900">{user.name}</p>
-                  <p className="text-[12px] text-gray-400">{user.email}</p>
+                  <p className="text-[12px] text-gray-400">@{user.username}</p>
                 </div>
                 <Badge
                   variant="outline"

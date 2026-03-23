@@ -21,7 +21,10 @@
       "Bash(ls -la /Users/mohamedareeh/JuneJunal/src/app/page.tsx /Users/mohamedareeh/JuneJunal/src/app/\\\\\\(dashboard\\\\\\)/page.tsx)",
       "Bash(npx tsc:*)",
       "Bash(git commit:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git push:*)",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(git restore:*)"
     ]
   }
 }

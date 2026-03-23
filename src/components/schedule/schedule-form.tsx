@@ -53,6 +53,10 @@ export function ScheduleForm({
     schedule?.sceneId ? String(schedule.sceneId) : ""
   );
 
+  const filteredScenes = episodeId
+    ? scenes.filter((s) => s.episodeId === Number(episodeId))
+    : [];
+
   async function handleSubmit(formData: FormData) {
     formData.set("episodeId", episodeId);
     formData.set("locationId", locationId);
@@ -75,82 +79,69 @@ export function ScheduleForm({
     <>
       <div onClick={() => setOpen(true)}>{trigger}</div>
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="sm:max-w-lg">
+        <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
-            {schedule ? "Edit Schedule" : "Add Schedule"}
+            {schedule ? "Edit Schedule" : "Schedule Scene"}
           </DialogTitle>
           <DialogDescription>
             {schedule
               ? "Update the schedule entry below."
-              : "Fill in the details for the new schedule entry."}
+              : "Assign a scene to a specific date and time slot."}
           </DialogDescription>
         </DialogHeader>
         <form action={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="episodeId">Episode</Label>
-              <Select
-                value={episodeId}
-                onValueChange={(val) => { setEpisodeId(val ?? ""); setSceneId(""); }}
-                required
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select episode" />
-                </SelectTrigger>
-                <SelectContent>
-                  {episodes.map((ep) => (
-                    <SelectItem key={ep.id} value={String(ep.id)}>
-                      Ep {ep.number} - {ep.title}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="locationId">Location</Label>
-              <Select
-                value={locationId}
-                onValueChange={(val) => setLocationId(val ?? "")}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select location" />
-                </SelectTrigger>
-                <SelectContent>
-                  {locations.map((loc) => (
-                    <SelectItem key={loc.id} value={String(loc.id)}>
-                      {loc.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+          {/* Episode Selection */}
+          <div className="space-y-2">
+            <Label htmlFor="episodeId">Episode</Label>
+            <Select
+              value={episodeId}
+              onValueChange={(val) => { setEpisodeId(val ?? ""); setSceneId(""); }}
+              required
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select episode" />
+              </SelectTrigger>
+              <SelectContent>
+                {episodes.map((ep) => (
+                  <SelectItem key={ep.id} value={String(ep.id)}>
+                    Ep {ep.number} - {ep.title}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
+          {/* Scene Selection (shown when episode is picked) */}
           {episodeId && (
             <div className="space-y-2">
               <Label htmlFor="sceneId">Scene</Label>
               <Select
                 value={sceneId}
-                onValueChange={(val) => setSceneId(val === "none" ? "" : val ?? "")}
+                onValueChange={(val) => setSceneId(val ?? "")}
+                required
               >
                 <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select scene (optional)" />
+                  <SelectValue placeholder="Select scene" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none">None</SelectItem>
-                  {scenes
-                    .filter((s) => s.episodeId === Number(episodeId))
-                    .map((s) => (
+                  {filteredScenes.length === 0 ? (
+                    <SelectItem value="__empty" disabled>
+                      No scenes for this episode
+                    </SelectItem>
+                  ) : (
+                    filteredScenes.map((s) => (
                       <SelectItem key={s.id} value={String(s.id)}>
                         Scene {s.sceneNumber}{s.title ? ` — ${s.title}` : ""}
                       </SelectItem>
-                    ))}
+                    ))
+                  )}
                 </SelectContent>
               </Select>
             </div>
           )}
 
+          {/* Date */}
           <div className="space-y-2">
             <Label htmlFor="date">Date</Label>
             <Input
@@ -159,30 +150,56 @@ export function ScheduleForm({
               type="date"
               required
               defaultValue={schedule?.date ?? ""}
+              className="w-full"
             />
           </div>
 
+          {/* Time Range */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="callTime">Call Time</Label>
+              <Label htmlFor="callTime">Start Time</Label>
               <Input
                 id="callTime"
                 name="callTime"
                 type="time"
+                required
                 defaultValue={schedule?.callTime ?? ""}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="wrapTime">Wrap Time</Label>
+              <Label htmlFor="wrapTime">End Time</Label>
               <Input
                 id="wrapTime"
                 name="wrapTime"
                 type="time"
+                required
                 defaultValue={schedule?.wrapTime ?? ""}
               />
             </div>
           </div>
 
+          {/* Location */}
+          <div className="space-y-2">
+            <Label htmlFor="locationId">Location</Label>
+            <Select
+              value={locationId}
+              onValueChange={(val) => setLocationId(val === "none" ? "" : val ?? "")}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select location (optional)" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">None</SelectItem>
+                {locations.map((loc) => (
+                  <SelectItem key={loc.id} value={String(loc.id)}>
+                    {loc.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Notes */}
           <div className="space-y-2">
             <Label htmlFor="notes">Notes</Label>
             <Textarea
@@ -195,12 +212,12 @@ export function ScheduleForm({
           </div>
 
           <DialogFooter>
-            <Button type="submit" disabled={isPending}>
+            <Button type="submit" disabled={isPending} className="w-full sm:w-auto rounded-xl bg-gray-900 hover:bg-gray-800">
               {isPending
                 ? "Saving..."
                 : schedule
                   ? "Update Schedule"
-                  : "Create Schedule"}
+                  : "Schedule Scene"}
             </Button>
           </DialogFooter>
         </form>

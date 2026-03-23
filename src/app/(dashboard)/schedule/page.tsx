@@ -1,12 +1,12 @@
 import { db } from "@/db";
 import { schedules, episodes, locations, scenes, sceneCast, castMembers } from "@/db/schema";
 import { desc, asc, sql } from "drizzle-orm";
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay, isSameMonth, isToday, parseISO } from "date-fns";
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay, isToday, parseISO } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScheduleForm } from "@/components/schedule/schedule-form";
 import { DeleteScheduleButton } from "@/components/schedule/delete-schedule-button";
-import { Calendar, Clock, MapPin } from "lucide-react";
+import { Calendar, Clock, MapPin, Film } from "lucide-react";
 
 export default async function SchedulePage() {
   let scheduleRows: {
@@ -126,19 +126,20 @@ export default async function SchedulePage() {
           episodes={allEpisodes}
           locations={allLocations}
           scenes={allScenes}
-          trigger={<Button className="rounded-xl bg-gray-900 hover:bg-gray-800">Add Schedule</Button>}
+          trigger={<Button className="rounded-xl bg-gray-900 hover:bg-gray-800">Schedule Scene</Button>}
         />
       </div>
 
+      {/* Mini Calendar - shown first on mobile, sidebar on desktop */}
       <div className="grid gap-6 lg:grid-cols-[1fr_280px]">
-        {/* Schedule List */}
-        <div className="space-y-6">
+        {/* Schedule Timeline */}
+        <div className="space-y-6 order-2 lg:order-1">
           {grouped.size === 0 ? (
             <div className="card-shadow rounded-2xl bg-white">
               <div className="flex flex-col items-center justify-center py-16">
                 <Calendar className="h-10 w-10 text-gray-300 mb-3" />
                 <p className="text-sm text-gray-400">
-                  No schedule entries found. Add your first entry to get started.
+                  No schedule entries found. Schedule your first scene to get started.
                 </p>
               </div>
             </div>
@@ -148,46 +149,96 @@ export default async function SchedulePage() {
                 <h3 className="mb-3 text-[12px] font-semibold uppercase tracking-wider text-gray-400">
                   {format(parseISO(date), "EEEE, MMMM d, yyyy")}
                 </h3>
-                <div className="space-y-2">
-                  {entries.map((entry) => (
-                    <div key={entry.id} className="card-shadow flex items-center gap-4 rounded-2xl bg-white px-5 py-4">
-                      <div className="flex h-12 w-12 shrink-0 flex-col items-center justify-center rounded-xl bg-gray-900 text-white">
-                        <span className="text-[9px] font-medium uppercase tracking-wider opacity-70">EP</span>
-                        <span className="text-lg font-bold leading-none">{entry.episodeNumber}</span>
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-[13px] font-semibold text-gray-900 truncate">
-                          {entry.episodeTitle}
-                        </p>
-                        {entry.sceneId && entry.sceneNumber != null && (
-                          <p className="text-[12px] text-gray-500 truncate">
-                            Scene {entry.sceneNumber}{entry.sceneTitle ? ` — ${entry.sceneTitle}` : ""}
-                          </p>
+                <div className="relative space-y-0">
+                  {/* Timeline connector */}
+                  {entries.length > 1 && (
+                    <div className="absolute left-[39px] top-6 bottom-6 w-px bg-gray-200 hidden sm:block" />
+                  )}
+                  {entries.map((entry, idx) => (
+                    <div key={entry.id} className="flex gap-3 sm:gap-4 pb-3 last:pb-0">
+                      {/* Time column */}
+                      <div className="hidden sm:flex w-[78px] shrink-0 flex-col items-center pt-4">
+                        {entry.callTime ? (
+                          <>
+                            <span className="text-[13px] font-bold text-gray-900 tabular-nums">
+                              {entry.callTime.slice(0, 5)}
+                            </span>
+                            {entry.wrapTime && (
+                              <span className="text-[11px] text-gray-400 tabular-nums">
+                                {entry.wrapTime.slice(0, 5)}
+                              </span>
+                            )}
+                          </>
+                        ) : (
+                          <span className="text-[11px] text-gray-400">No time</span>
                         )}
-                        <div className="mt-1 flex items-center gap-3 text-[11px] text-gray-400">
-                          {entry.locationName && (
-                            <span className="flex items-center gap-1">
-                              <MapPin className="h-3 w-3" /> {entry.locationName}
-                            </span>
-                          )}
-                          {entry.callTime && (
-                            <span className="flex items-center gap-1">
-                              <Clock className="h-3 w-3" /> {entry.callTime.slice(0, 5)}
-                              {entry.wrapTime && ` - ${entry.wrapTime.slice(0, 5)}`}
-                            </span>
-                          )}
-                        </div>
-                        {entry.sceneId && sceneCastMap.has(entry.sceneId) && (
-                          <div className="flex items-center gap-1 mt-1.5 flex-wrap">
-                            {sceneCastMap.get(entry.sceneId)!.map((name) => (
-                              <Badge key={name} variant="outline" className="rounded-lg border-gray-200 text-[10px] text-gray-500">
-                                {name}
-                              </Badge>
-                            ))}
+                      </div>
+
+                      {/* Entry card */}
+                      <div className="card-shadow flex-1 rounded-2xl bg-white p-4 sm:p-5">
+                        <div className="flex items-start gap-3">
+                          {/* Episode badge */}
+                          <div className="flex h-10 w-10 sm:h-11 sm:w-11 shrink-0 flex-col items-center justify-center rounded-xl bg-gray-900 text-white">
+                            <span className="text-[8px] font-medium uppercase tracking-wider opacity-70">EP</span>
+                            <span className="text-base font-bold leading-none">{entry.episodeNumber}</span>
                           </div>
-                        )}
+
+                          <div className="flex-1 min-w-0">
+                            {/* Scene info (primary) */}
+                            {entry.sceneId && entry.sceneNumber != null ? (
+                              <>
+                                <p className="text-[14px] font-semibold text-gray-900 truncate">
+                                  Scene {entry.sceneNumber}{entry.sceneTitle ? ` — ${entry.sceneTitle}` : ""}
+                                </p>
+                                <p className="text-[12px] text-gray-500 truncate">
+                                  {entry.episodeTitle}
+                                </p>
+                              </>
+                            ) : (
+                              <p className="text-[14px] font-semibold text-gray-900 truncate">
+                                {entry.episodeTitle}
+                              </p>
+                            )}
+
+                            {/* Mobile time display */}
+                            {entry.callTime && (
+                              <div className="sm:hidden mt-1 flex items-center gap-1 text-[12px] text-gray-500">
+                                <Clock className="h-3 w-3" />
+                                <span className="tabular-nums">{entry.callTime.slice(0, 5)}</span>
+                                {entry.wrapTime && (
+                                  <span className="tabular-nums"> — {entry.wrapTime.slice(0, 5)}</span>
+                                )}
+                              </div>
+                            )}
+
+                            {/* Meta info */}
+                            <div className="mt-1.5 flex items-center gap-3 flex-wrap text-[11px] text-gray-400">
+                              {entry.locationName && (
+                                <span className="flex items-center gap-1">
+                                  <MapPin className="h-3 w-3" /> {entry.locationName}
+                                </span>
+                              )}
+                            </div>
+
+                            {/* Cast badges */}
+                            {entry.sceneId && sceneCastMap.has(entry.sceneId) && (
+                              <div className="flex items-center gap-1 mt-2 flex-wrap">
+                                {sceneCastMap.get(entry.sceneId)!.map((name) => (
+                                  <Badge key={name} variant="outline" className="rounded-lg border-gray-200 text-[10px] text-gray-500">
+                                    {name}
+                                  </Badge>
+                                ))}
+                              </div>
+                            )}
+
+                            {entry.notes && (
+                              <p className="text-[11px] text-gray-400 mt-1.5 truncate">{entry.notes}</p>
+                            )}
+                          </div>
+
+                          <DeleteScheduleButton id={entry.id} />
+                        </div>
                       </div>
-                      <DeleteScheduleButton id={entry.id} />
                     </div>
                   ))}
                 </div>
@@ -197,41 +248,43 @@ export default async function SchedulePage() {
         </div>
 
         {/* Mini Calendar */}
-        <div className="card-shadow h-fit rounded-2xl bg-white p-5">
-          <h3 className="mb-3 text-[13px] font-semibold text-gray-900">
-            {format(now, "MMMM yyyy")}
-          </h3>
-          <div className="grid grid-cols-7 gap-1 text-center">
-            {["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map((d) => (
-              <div key={d} className="py-1 text-[10px] font-semibold text-gray-400">
-                {d}
-              </div>
-            ))}
-            {Array.from({ length: startDayOfWeek }).map((_, i) => (
-              <div key={`pad-${i}`} />
-            ))}
-            {calendarDays.map((day) => {
-              const dateStr = format(day, "yyyy-MM-dd");
-              const hasShoot = scheduledDates.has(dateStr);
-              const today = isToday(day);
-              return (
-                <div
-                  key={dateStr}
-                  className={`relative flex flex-col items-center justify-center rounded-lg py-1.5 text-[11px] font-medium ${
-                    today
-                      ? "bg-gray-900 text-white"
-                      : hasShoot
-                        ? "bg-gray-100 text-gray-900"
-                        : "text-gray-600"
-                  }`}
-                >
-                  {format(day, "d")}
-                  {hasShoot && !today && (
-                    <span className="absolute bottom-0.5 h-1 w-1 rounded-full bg-gray-900" />
-                  )}
+        <div className="order-1 lg:order-2">
+          <div className="card-shadow h-fit rounded-2xl bg-white p-5">
+            <h3 className="mb-3 text-[13px] font-semibold text-gray-900">
+              {format(now, "MMMM yyyy")}
+            </h3>
+            <div className="grid grid-cols-7 gap-1 text-center">
+              {["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map((d) => (
+                <div key={d} className="py-1 text-[10px] font-semibold text-gray-400">
+                  {d}
                 </div>
-              );
-            })}
+              ))}
+              {Array.from({ length: startDayOfWeek }).map((_, i) => (
+                <div key={`pad-${i}`} />
+              ))}
+              {calendarDays.map((day) => {
+                const dateStr = format(day, "yyyy-MM-dd");
+                const hasShoot = scheduledDates.has(dateStr);
+                const today = isToday(day);
+                return (
+                  <div
+                    key={dateStr}
+                    className={`relative flex flex-col items-center justify-center rounded-lg py-1.5 text-[11px] font-medium ${
+                      today
+                        ? "bg-gray-900 text-white"
+                        : hasShoot
+                          ? "bg-gray-100 text-gray-900"
+                          : "text-gray-600"
+                    }`}
+                  >
+                    {format(day, "d")}
+                    {hasShoot && !today && (
+                      <span className="absolute bottom-0.5 h-1 w-1 rounded-full bg-gray-900" />
+                    )}
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </div>
       </div>

@@ -6,6 +6,32 @@ import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { hash } from "bcryptjs";
 
+async function ensureUserAccount(name: string, email: string, castMemberId: number) {
+  const [existingUser] = await db
+    .select()
+    .from(users)
+    .where(eq(users.email, email))
+    .limit(1);
+
+  if (existingUser) {
+    await db
+      .update(castMembers)
+      .set({ userId: existingUser.id })
+      .where(eq(castMembers.id, castMemberId));
+  } else {
+    const passwordHash = await hash("password123", 10);
+    const [newUser] = await db
+      .insert(users)
+      .values({ name, email, passwordHash, role: "crew" })
+      .returning();
+
+    await db
+      .update(castMembers)
+      .set({ userId: newUser.id })
+      .where(eq(castMembers.id, castMemberId));
+  }
+}
+
 export async function createCastMember(formData: FormData) {
   const name = formData.get("name") as string;
   const email = (formData.get("email") as string) || null;
@@ -15,47 +41,11 @@ export async function createCastMember(formData: FormData) {
   const paymentType = (formData.get("paymentType") as "one_time" | "per_episode") || "one_time";
 
   const [castMember] = await db.insert(castMembers).values({
-    name,
-    email,
-    phone,
-    bio,
-    dayRate,
-    paymentType,
+    name, email, phone, bio, dayRate, paymentType,
   }).returning();
 
-  // Auto-create user account if email is provided
   if (email) {
-    const [existingUser] = await db
-      .select()
-      .from(users)
-      .where(eq(users.email, email))
-      .limit(1);
-
-    if (existingUser) {
-      // Link cast member to existing user
-      await db
-        .update(castMembers)
-        .set({ userId: existingUser.id })
-        .where(eq(castMembers.id, castMember.id));
-    } else {
-      // Create new user account
-      const passwordHash = await hash("password123", 10);
-      const [newUser] = await db
-        .insert(users)
-        .values({
-          name,
-          email,
-          passwordHash,
-          role: "crew",
-        })
-        .returning();
-
-      // Link cast member to new user
-      await db
-        .update(castMembers)
-        .set({ userId: newUser.id })
-        .where(eq(castMembers.id, castMember.id));
-    }
+    await ensureUserAccount(name, email, castMember.id);
   }
 
   revalidatePath("/cast");
@@ -71,15 +61,21 @@ export async function updateCastMember(id: number, formData: FormData) {
 
   await db
     .update(castMembers)
-    .set({
-      name,
-      email,
-      phone,
-      bio,
-      dayRate,
-      paymentType,
-    })
+    .set({ name, email, phone, bio, dayRate, paymentType })
     .where(eq(castMembers.id, id));
+
+  // Auto-create user account if email is provided and no userId linked
+  if (email) {
+    const [member] = await db
+      .select({ userId: castMembers.userId })
+      .from(castMembers)
+      .where(eq(castMembers.id, id))
+      .limit(1);
+
+    if (!member?.userId) {
+      await ensureUserAccount(name, email, id);
+    }
+  }
 
   revalidatePath("/cast");
   revalidatePath(`/cast/${id}`);
@@ -87,6 +83,5 @@ export async function updateCastMember(id: number, formData: FormData) {
 
 export async function deleteCastMember(id: number) {
   await db.delete(castMembers).where(eq(castMembers.id, id));
-
   revalidatePath("/cast");
 }

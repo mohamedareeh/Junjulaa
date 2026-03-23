@@ -8,7 +8,18 @@
       "Bash(shopt -s dotglob)",
       "Bash(mv /Users/mohamedareeh/JuneJunal/temp-app/* /Users/mohamedareeh/JuneJunal/)",
       "Bash(npm install:*)",
-      "Bash(npx --yes shadcn@latest init --yes)"
+      "Bash(npx --yes shadcn@latest init --yes)",
+      "Bash(npx shadcn@latest add card table badge dialog input label select textarea tabs avatar dropdown-menu separator sheet calendar popover form sonner command scroll-area progress tooltip chart -y)",
+      "Bash(ls /Users/mohamedareeh/JuneJunal/src/app/\\\\\\(dashboard\\\\\\)/)",
+      "Bash(npm run:*)",
+      "Bash(npx tsx:*)",
+      "Bash(node -e \"const bcrypt = require\\(''bcryptjs''\\); bcrypt.hash\\(''admin123'', 12\\).then\\(h => { console.log\\(''hash:'', h\\); bcrypt.compare\\(''admin123'', h\\).then\\(r => console.log\\(''compare:'', r\\)\\); }\\);\")",
+      "Bash(node -e \"const bcrypt = require\\(''bcryptjs''\\); bcrypt.compare\\(''admin123'', ''$2b$12$jgAQSZ22lKTeSjVaBfWnr.LGvtwgz13OU4hhMpbLF2JnO.OVZfb8.''\\).then\\(r => console.log\\(''match:'', r\\)\\);\")",
+      "Bash(node -e \"const bcrypt = require\\(''bcryptjs''\\); console.log\\(typeof bcrypt.compare, typeof bcrypt.default\\);\")",
+      "Bash(node -e \"import\\(''bcryptjs''\\).then\\(m => console.log\\(''default:'', typeof m.default, ''compare:'', typeof m.compare, ''keys:'', Object.keys\\(m\\).slice\\(0,10\\)\\)\\);\")",
+      "Bash(node -e \"import\\(''bcryptjs''\\).then\\(m => console.log\\(''default.compare:'', typeof m.default.compare\\)\\);\")",
+      "Bash(ls -la /Users/mohamedareeh/JuneJunal/src/app/page.tsx /Users/mohamedareeh/JuneJunal/src/app/\\\\\\(dashboard\\\\\\)/page.tsx)",
+      "Bash(npx tsc:*)"
     ]
   }
 }

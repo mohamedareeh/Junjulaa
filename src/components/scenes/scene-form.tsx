@@ -40,6 +40,7 @@ interface SceneFormProps {
     timeOfDay: string | null;
     duration: string | null;
     continuitySceneId: number | null;
+    scriptUrl: string | null;
   };
   locations: { id: number; name: string }[];
   castMembers: { id: number; name: string }[];
@@ -67,6 +68,8 @@ export function SceneForm({
   const [continuitySceneId, setContinuitySceneId] = useState(
     scene?.continuitySceneId ? String(scene.continuitySceneId) : ""
   );
+  const [scriptUrl, setScriptUrl] = useState(scene?.scriptUrl ?? "");
+  const [uploading, setUploading] = useState(false);
 
   function toggleCast(id: number) {
     setSelectedCast((prev) =>
@@ -79,6 +82,7 @@ export function SceneForm({
     if (locationId) formData.set("locationId", locationId);
     if (timeOfDay) formData.set("timeOfDay", timeOfDay);
     if (continuitySceneId) formData.set("continuitySceneId", continuitySceneId);
+    if (scriptUrl) formData.set("scriptUrl", scriptUrl);
     selectedCast.forEach((id) => formData.append("castMemberIds", String(id)));
 
     startTransition(async () => {
@@ -231,6 +235,50 @@ export function SceneForm({
                 </Select>
               </div>
             )}
+
+            <div className="space-y-2">
+              <Label>Script</Label>
+              <div className="flex items-center gap-2">
+                <Input
+                  type="file"
+                  accept=".pdf,.doc,.docx"
+                  disabled={uploading}
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    setUploading(true);
+                    try {
+                      const uploadData = new FormData();
+                      uploadData.append("file", file);
+                      const res = await fetch("/api/upload", {
+                        method: "POST",
+                        body: uploadData,
+                      });
+                      if (!res.ok) throw new Error("Upload failed");
+                      const data = await res.json();
+                      setScriptUrl(data.url);
+                    } catch (err) {
+                      console.error("Script upload failed:", err);
+                    } finally {
+                      setUploading(false);
+                    }
+                  }}
+                />
+              </div>
+              {uploading && (
+                <p className="text-xs text-muted-foreground">Uploading...</p>
+              )}
+              {scriptUrl && (
+                <a
+                  href={scriptUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs text-blue-600 hover:underline"
+                >
+                  View current script
+                </a>
+              )}
+            </div>
 
             <div className="space-y-2">
               <Label>Cast in this Scene</Label>

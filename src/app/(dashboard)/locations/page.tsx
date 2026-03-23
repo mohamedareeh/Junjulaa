@@ -1,17 +1,11 @@
 import { db } from "@/db";
 import { locations, schedules } from "@/db/schema";
 import { sql, desc } from "drizzle-orm";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { LocationForm } from "@/components/locations/location-form";
 import { formatCurrency } from "@/lib/format";
 import { DeleteLocationButton } from "@/components/locations/delete-location-button";
-import { MapPinIcon, DollarSignIcon, CalendarIcon } from "lucide-react";
+import { MapPin, DollarSign, Calendar } from "lucide-react";
 
 export default async function LocationsPage() {
   let locationRows: {
@@ -50,85 +44,78 @@ export default async function LocationsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="mx-auto max-w-7xl space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Locations</h1>
-          <p className="text-muted-foreground mt-1">
+          <h1 className="text-2xl font-bold tracking-tight text-gray-900">Locations</h1>
+          <p className="mt-1 text-sm text-gray-500">
             Manage filming locations and venues
           </p>
         </div>
-        <LocationForm trigger={<Button>Add Location</Button>} />
+        <LocationForm trigger={<Button className="rounded-xl bg-gray-900 hover:bg-gray-800">Add Location</Button>} />
       </div>
 
       {locationRows.length === 0 ? (
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center py-12">
-            <MapPinIcon className="size-12 text-muted-foreground mb-4" />
-            <p className="text-muted-foreground text-center">
+        <div className="card-shadow rounded-2xl bg-white">
+          <div className="flex flex-col items-center justify-center py-16">
+            <MapPin className="h-10 w-10 text-gray-300 mb-3" />
+            <p className="text-sm text-gray-400">
               No locations found. Add your first location to get started.
             </p>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {locationRows.map((loc) => (
-            <Card key={loc.id} className="relative group">
-              <CardHeader className="pb-3">
-                <div className="flex items-start justify-between">
-                  <CardTitle className="text-lg leading-tight">
-                    {loc.name}
-                  </CardTitle>
-                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <LocationForm
-                      location={{
-                        id: loc.id,
-                        name: loc.name,
-                        address: loc.address,
-                        photos: loc.photos,
-                        permitInfo: loc.permitInfo,
-                        costPerDay: loc.costPerDay,
-                        notes: loc.notes,
-                        createdAt: loc.createdAt,
-                      }}
-                      trigger={
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                        >
-                          Edit
-                        </Button>
-                      }
-                    />
-                    <DeleteLocationButton id={loc.id} />
-                  </div>
+            <div key={loc.id} className="card-shadow group relative rounded-2xl bg-white p-5 transition-all hover:shadow-md">
+              <div className="flex items-start justify-between">
+                <h3 className="text-[15px] font-semibold text-gray-900 leading-tight">
+                  {loc.name}
+                </h3>
+                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <LocationForm
+                    location={{
+                      id: loc.id,
+                      name: loc.name,
+                      address: loc.address,
+                      photos: loc.photos,
+                      permitInfo: loc.permitInfo,
+                      costPerDay: loc.costPerDay,
+                      notes: loc.notes,
+                      createdAt: loc.createdAt,
+                    }}
+                    trigger={
+                      <Button variant="ghost" size="sm" className="rounded-lg text-gray-400 hover:text-gray-900">
+                        Edit
+                      </Button>
+                    }
+                  />
+                  <DeleteLocationButton id={loc.id} />
                 </div>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {loc.address && (
-                  <div className="flex items-start gap-2 text-sm text-muted-foreground">
-                    <MapPinIcon className="size-4 mt-0.5 shrink-0" />
-                    <span>{loc.address}</span>
-                  </div>
-                )}
-                <div className="flex items-center gap-4 text-sm">
-                  <div className="flex items-center gap-1.5 text-muted-foreground">
-                    <DollarSignIcon className="size-4" />
-                    <span>
-                      {loc.costPerDay
-                        ? `${formatCurrency(loc.costPerDay)}/day`
-                        : "No rate set"}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-1.5 text-muted-foreground">
-                    <CalendarIcon className="size-4" />
-                    <span>
-                      {loc.shootCount} shoot{loc.shootCount !== 1 ? "s" : ""}
-                    </span>
-                  </div>
+              </div>
+              {loc.address && (
+                <div className="mt-2 flex items-start gap-2 text-[12px] text-gray-500">
+                  <MapPin className="h-3.5 w-3.5 mt-0.5 shrink-0 text-gray-400" />
+                  <span>{loc.address}</span>
                 </div>
-              </CardContent>
-            </Card>
+              )}
+              <div className="mt-3 flex items-center gap-4 text-[12px] text-gray-400">
+                <div className="flex items-center gap-1.5">
+                  <DollarSign className="h-3.5 w-3.5" />
+                  <span>
+                    {loc.costPerDay
+                      ? `${formatCurrency(loc.costPerDay)}/day`
+                      : "No rate set"}
+                  </span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <Calendar className="h-3.5 w-3.5" />
+                  <span>
+                    {loc.shootCount} shoot{loc.shootCount !== 1 ? "s" : ""}
+                  </span>
+                </div>
+              </div>
+            </div>
           ))}
         </div>
       )}

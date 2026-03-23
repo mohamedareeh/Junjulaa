@@ -103,6 +103,7 @@ export const castMembers = pgTable("cast_members", {
   bio: text("bio"),
   dayRate: decimal("day_rate", { precision: 10, scale: 2 }),
   paymentType: paymentTypeEnum("payment_type").notNull().default("per_episode"),
+  userId: integer("user_id").references(() => users.id, { onDelete: "set null" }),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -128,6 +129,7 @@ export const crewMembers = pgTable("crew_members", {
   roleTitle: varchar("role_title", { length: 255 }).notNull(),
   dayRate: decimal("day_rate", { precision: 10, scale: 2 }),
   paymentType: paymentTypeEnum("payment_type").notNull().default("per_episode"),
+  userId: integer("user_id").references(() => users.id, { onDelete: "set null" }),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -200,6 +202,7 @@ export const schedules = pgTable("schedules", {
   episodeId: integer("episode_id")
     .notNull()
     .references(() => episodes.id, { onDelete: "cascade" }),
+  sceneId: integer("scene_id").references(() => scenes.id, { onDelete: "set null" }),
   locationId: integer("location_id").references(() => locations.id),
   date: date("date").notNull(),
   callTime: time("call_time"),
@@ -234,6 +237,7 @@ export const scenes = pgTable("scenes", {
   timeOfDay: timeOfDayEnum("time_of_day"),
   duration: varchar("duration", { length: 50 }),
   continuitySceneId: integer("continuity_scene_id"),
+  scriptUrl: text("script_url"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -406,6 +410,10 @@ export const schedulesRelations = relations(schedules, ({ one }) => ({
   episode: one(episodes, {
     fields: [schedules.episodeId],
     references: [episodes.id],
+  }),
+  scene: one(scenes, {
+    fields: [schedules.sceneId],
+    references: [scenes.id],
   }),
   location: one(locations, {
     fields: [schedules.locationId],

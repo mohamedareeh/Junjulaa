@@ -27,9 +27,10 @@ import {
 import type { Schedule } from "@/db/schema";
 
 interface ScheduleFormProps {
-  schedule?: Schedule;
+  schedule?: Schedule & { sceneId?: number | null };
   episodes: { id: number; number: number; title: string }[];
   locations: { id: number; name: string }[];
+  scenes: { id: number; episodeId: number; sceneNumber: number; title: string | null }[];
   trigger: React.ReactNode;
 }
 
@@ -37,6 +38,7 @@ export function ScheduleForm({
   schedule,
   episodes,
   locations,
+  scenes,
   trigger,
 }: ScheduleFormProps) {
   const [open, setOpen] = useState(false);
@@ -47,10 +49,14 @@ export function ScheduleForm({
   const [locationId, setLocationId] = useState(
     schedule?.locationId ? String(schedule.locationId) : ""
   );
+  const [sceneId, setSceneId] = useState(
+    schedule?.sceneId ? String(schedule.sceneId) : ""
+  );
 
   async function handleSubmit(formData: FormData) {
     formData.set("episodeId", episodeId);
     formData.set("locationId", locationId);
+    formData.set("sceneId", sceneId);
     startTransition(async () => {
       try {
         if (schedule) {
@@ -86,7 +92,7 @@ export function ScheduleForm({
               <Label htmlFor="episodeId">Episode</Label>
               <Select
                 value={episodeId}
-                onValueChange={(val) => setEpisodeId(val ?? "")}
+                onValueChange={(val) => { setEpisodeId(val ?? ""); setSceneId(""); }}
                 required
               >
                 <SelectTrigger className="w-full">
@@ -120,6 +126,30 @@ export function ScheduleForm({
               </Select>
             </div>
           </div>
+
+          {episodeId && (
+            <div className="space-y-2">
+              <Label htmlFor="sceneId">Scene</Label>
+              <Select
+                value={sceneId}
+                onValueChange={(val) => setSceneId(val === "none" ? "" : val ?? "")}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select scene (optional)" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">None</SelectItem>
+                  {scenes
+                    .filter((s) => s.episodeId === Number(episodeId))
+                    .map((s) => (
+                      <SelectItem key={s.id} value={String(s.id)}>
+                        Scene {s.sceneNumber}{s.title ? ` — ${s.title}` : ""}
+                      </SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
 
           <div className="space-y-2">
             <Label htmlFor="date">Date</Label>

@@ -1,24 +1,18 @@
 import { db } from "@/db";
 import { episodes } from "@/db/schema";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { EpisodeForm } from "@/components/episodes/episode-form";
 import Link from "next/link";
 import { DeleteEpisodeButton } from "@/components/episodes/delete-episode-button";
+import { Film, ArrowUpRight } from "lucide-react";
 import type { Episode } from "@/db/schema";
 
 const statusColors: Record<string, string> = {
-  pre_production: "bg-yellow-100 text-yellow-800",
-  filming: "bg-blue-100 text-blue-800",
-  post_production: "bg-purple-100 text-purple-800",
-  completed: "bg-green-100 text-green-800",
+  pre_production: "border-amber-200 bg-amber-50 text-amber-700",
+  filming: "border-blue-200 bg-blue-50 text-blue-700",
+  post_production: "border-violet-200 bg-violet-50 text-violet-700",
+  completed: "border-emerald-200 bg-emerald-50 text-emerald-700",
 };
 
 const statusLabels: Record<string, string> = {
@@ -38,76 +32,72 @@ export default async function EpisodesPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="mx-auto max-w-7xl space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Episodes</h1>
-          <p className="text-muted-foreground mt-1">
+          <h1 className="text-2xl font-bold tracking-tight text-gray-900">Episodes</h1>
+          <p className="mt-1 text-sm text-gray-500">
             Manage all episodes in the series
           </p>
         </div>
         <EpisodeForm
-          trigger={<Button>Add Episode</Button>}
+          trigger={<Button className="rounded-xl bg-gray-900 hover:bg-gray-800">Add Episode</Button>}
         />
       </div>
 
       {allEpisodes.length === 0 ? (
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center py-12">
-            <p className="text-muted-foreground mb-4">
+        <div className="card-shadow rounded-2xl bg-white">
+          <div className="flex flex-col items-center justify-center py-16">
+            <Film className="h-10 w-10 text-gray-300 mb-3" />
+            <p className="text-sm text-gray-400 mb-4">
               No episodes yet. Create your first episode to get started.
             </p>
             <EpisodeForm
-              trigger={<Button>Add Episode</Button>}
+              trigger={<Button className="rounded-xl bg-gray-900 hover:bg-gray-800">Add Episode</Button>}
             />
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {allEpisodes.map((ep) => (
-            <Card key={ep.id} className="transition-shadow hover:shadow-md h-full relative group">
-              <Link href={`/episodes/${ep.id}`}>
-                <CardHeader className="pb-3">
-                  <div className="flex items-center justify-between">
-                    <CardDescription className="text-xs font-medium">
-                      Episode {ep.number}
-                    </CardDescription>
-                    <Badge
-                      className={`text-xs ${statusColors[ep.status] ?? ""}`}
-                    >
-                      {statusLabels[ep.status] ?? ep.status}
-                    </Badge>
-                  </div>
-                  <CardTitle className="text-lg leading-snug">
-                    {ep.title}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2 text-sm text-muted-foreground">
+            <div key={ep.id} className="card-shadow group relative rounded-2xl bg-white p-5 transition-all hover:shadow-md">
+              <Link href={`/episodes/${ep.id}`} className="block">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-[11px] font-semibold uppercase tracking-wider text-gray-400">
+                    Episode {ep.number}
+                  </span>
+                  <Badge
+                    variant="outline"
+                    className={`text-[10px] font-medium border ${statusColors[ep.status] ?? ""}`}
+                  >
+                    {statusLabels[ep.status] ?? ep.status}
+                  </Badge>
+                </div>
+                <h3 className="text-[15px] font-semibold text-gray-900 leading-snug">
+                  {ep.title}
+                </h3>
+                <div className="mt-2 space-y-1">
                   {ep.director && (
-                    <p>
-                      <span className="font-medium text-foreground">
-                        Director:
-                      </span>{" "}
-                      {ep.director}
+                    <p className="text-[12px] text-gray-500">
+                      Dir. {ep.director}
                     </p>
                   )}
                   {(ep.startDate || ep.endDate) && (
-                    <p>
-                      {ep.startDate && (
-                        <span>{ep.startDate}</span>
-                      )}
+                    <p className="text-[12px] text-gray-400">
+                      {ep.startDate && <span>{ep.startDate}</span>}
                       {ep.startDate && ep.endDate && " — "}
-                      {ep.endDate && (
-                        <span>{ep.endDate}</span>
-                      )}
+                      {ep.endDate && <span>{ep.endDate}</span>}
                     </p>
                   )}
-                </CardContent>
+                </div>
+                <div className="mt-3 flex items-center gap-1 text-[11px] font-medium text-gray-400">
+                  View details <ArrowUpRight className="h-3 w-3" />
+                </div>
               </Link>
-              <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+              <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
                 <DeleteEpisodeButton id={ep.id} />
               </div>
-            </Card>
+            </div>
           ))}
         </div>
       )}

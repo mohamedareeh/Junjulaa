@@ -24,11 +24,12 @@ export async function createScene(formData: FormData) {
   const continuitySceneId = formData.get("continuitySceneId")
     ? Number(formData.get("continuitySceneId"))
     : null;
+  const scriptUrl = (formData.get("scriptUrl") as string) || null;
   const castMemberIds = formData.getAll("castMemberIds").map(Number);
 
   const [scene] = await db
     .insert(scenes)
-    .values({ episodeId, sceneNumber, title, description, locationId, props, timeOfDay, duration, continuitySceneId })
+    .values({ episodeId, sceneNumber, title, description, locationId, props, timeOfDay, duration, continuitySceneId, scriptUrl })
     .returning();
 
   if (castMemberIds.length > 0) {
@@ -59,11 +60,12 @@ export async function updateScene(sceneId: number, formData: FormData) {
   const continuitySceneId = formData.get("continuitySceneId")
     ? Number(formData.get("continuitySceneId"))
     : null;
+  const scriptUrl = (formData.get("scriptUrl") as string) || null;
   const castMemberIds = formData.getAll("castMemberIds").map(Number);
 
   await db
     .update(scenes)
-    .set({ sceneNumber, title, description, locationId, props, timeOfDay, duration, continuitySceneId })
+    .set({ sceneNumber, title, description, locationId, props, timeOfDay, duration, continuitySceneId, scriptUrl })
     .where(eq(scenes.id, sceneId));
 
   // Replace cast assignments

@@ -1,26 +1,13 @@
 import { db } from "@/db";
 import { budgets, expenses, episodes } from "@/db/schema";
 import { eq, sql, and } from "drizzle-orm";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Progress } from "@/components/ui/progress";
 import { BudgetForm } from "@/components/expenses/budget-form";
 import { DeleteBudgetButton } from "@/components/expenses/delete-budget-button";
 import { formatCurrency } from "@/lib/format";
+import { PiggyBank, TrendingUp, TrendingDown, Wallet } from "lucide-react";
 
 const categoryLabels: Record<string, string> = {
   equipment: "Equipment",
@@ -36,15 +23,14 @@ const categoryLabels: Record<string, string> = {
 
 function getStatusColor(percentage: number): string {
   if (percentage > 100) return "text-red-600";
-  if (percentage >= 80) return "text-yellow-600";
-  return "text-green-600";
+  if (percentage >= 80) return "text-amber-600";
+  return "text-emerald-600";
 }
 
 function getProgressColor(percentage: number): string {
   if (percentage > 100) return "[&_[data-slot=progress-indicator]]:bg-red-500";
-  if (percentage >= 80)
-    return "[&_[data-slot=progress-indicator]]:bg-yellow-500";
-  return "[&_[data-slot=progress-indicator]]:bg-green-500";
+  if (percentage >= 80) return "[&_[data-slot=progress-indicator]]:bg-amber-500";
+  return "[&_[data-slot=progress-indicator]]:bg-emerald-500";
 }
 
 interface BudgetRow {
@@ -74,18 +60,12 @@ export default async function BudgetPage() {
 
   try {
     allEpisodes = await db
-      .select({
-        id: episodes.id,
-        number: episodes.number,
-        title: episodes.title,
-      })
+      .select({ id: episodes.id, number: episodes.number, title: episodes.title })
       .from(episodes)
       .orderBy(episodes.number);
 
-    // Fetch all budgets
     const allBudgets = await db.select().from(budgets);
 
-    // Fetch spending by episode + category
     const spendingRows = await db
       .select({
         episodeId: expenses.episodeId,
@@ -95,23 +75,17 @@ export default async function BudgetPage() {
       .from(expenses)
       .groupBy(expenses.episodeId, expenses.category);
 
-    // Build a spending lookup: "episodeId:category" -> amount
     const spendingMap = new Map<string, number>();
     for (const row of spendingRows) {
       const key = `${row.episodeId ?? "null"}:${row.category}`;
       spendingMap.set(key, parseFloat(row.total));
     }
 
-    // Series-level budgets (episodeId is null)
     const seriesLevelBudgets = allBudgets.filter((b) => b.episodeId === null);
-    // Total spending across all episodes per category (for series overview)
     const totalSpendingByCategory = new Map<string, number>();
     for (const [key, val] of spendingMap) {
       const cat = key.split(":")[1];
-      totalSpendingByCategory.set(
-        cat,
-        (totalSpendingByCategory.get(cat) ?? 0) + val
-      );
+      totalSpendingByCategory.set(cat, (totalSpendingByCategory.get(cat) ?? 0) + val);
     }
 
     seriesBudgets = seriesLevelBudgets.map((b) => {
@@ -124,7 +98,6 @@ export default async function BudgetPage() {
       return { id: b.id, category: b.category, allocated, spent, remaining, percentage };
     });
 
-    // Per-episode budgets
     for (const ep of allEpisodes) {
       const epBudgets = allBudgets.filter((b) => b.episodeId === ep.id);
       if (epBudgets.length === 0) continue;
@@ -139,14 +112,7 @@ export default async function BudgetPage() {
         const percentage = allocated > 0 ? (spent / allocated) * 100 : 0;
         totalAllocated += allocated;
         totalSpent += spent;
-        return {
-          id: b.id,
-          category: b.category,
-          allocated,
-          spent,
-          remaining,
-          percentage,
-        };
+        return { id: b.id, category: b.category, allocated, spent, remaining, percentage };
       });
 
       episodeBudgets.push({
@@ -159,7 +125,6 @@ export default async function BudgetPage() {
       });
     }
 
-    // If no series-level budgets, still compute grand totals from episode-level
     if (seriesBudgets.length === 0) {
       for (const eb of episodeBudgets) {
         grandTotalAllocated += eb.totalAllocated;
@@ -171,171 +136,147 @@ export default async function BudgetPage() {
   }
 
   const grandRemaining = grandTotalAllocated - grandTotalSpent;
-  const grandPercentage =
-    grandTotalAllocated > 0
-      ? (grandTotalSpent / grandTotalAllocated) * 100
-      : 0;
+  const grandPercentage = grandTotalAllocated > 0 ? (grandTotalSpent / grandTotalAllocated) * 100 : 0;
+
+  const overviewCards = [
+    { label: "Total Allocated", value: formatCurrency(grandTotalAllocated), icon: Wallet, color: "bg-gray-900 text-white" },
+    { label: "Total Spent", value: formatCurrency(grandTotalSpent), icon: TrendingUp, color: "bg-blue-50 text-blue-600" },
+    { label: "Remaining", value: formatCurrency(grandRemaining), icon: TrendingDown, color: grandRemaining >= 0 ? "bg-emerald-50 text-emerald-600" : "bg-red-50 text-red-600" },
+  ];
 
   return (
-    <div className="space-y-6">
+    <div className="mx-auto max-w-7xl space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Budget</h1>
-          <p className="text-muted-foreground mt-1">
-            Track budget allocation and spending across the series
+          <h1 className="text-2xl font-bold tracking-tight text-gray-900">Budget</h1>
+          <p className="mt-1 text-sm text-gray-500">
+            Track budget allocation and spending
           </p>
         </div>
         <BudgetForm
           episodes={allEpisodes}
-          trigger={<Button>Set Budget</Button>}
+          trigger={<Button className="rounded-xl bg-gray-900 hover:bg-gray-800">Set Budget</Button>}
         />
       </div>
 
-      {/* Overall Series Summary */}
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle>Series Budget Overview</CardTitle>
-          <CardDescription>
-            Overall budget allocation vs actual spending
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid gap-4 sm:grid-cols-3">
-            <div>
-              <p className="text-sm text-muted-foreground">Total Allocated</p>
-              <p className="text-2xl font-bold">
-                {formatCurrency(grandTotalAllocated)}
-              </p>
+      {/* Overview Cards */}
+      <div className="grid gap-4 sm:grid-cols-3">
+        {overviewCards.map((stat) => (
+          <div key={stat.label} className="card-shadow rounded-2xl bg-white p-5">
+            <div className="flex items-center justify-between">
+              <p className="text-[13px] font-medium text-gray-500">{stat.label}</p>
+              <div className={`flex h-9 w-9 items-center justify-center rounded-xl ${stat.color}`}>
+                <stat.icon className="h-4 w-4" />
+              </div>
             </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Total Spent</p>
-              <p className={`text-2xl font-bold ${getStatusColor(grandPercentage)}`}>
-                {formatCurrency(grandTotalSpent)}
-              </p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Remaining</p>
-              <p
-                className={`text-2xl font-bold ${grandRemaining < 0 ? "text-red-600" : "text-green-600"}`}
-              >
-                {formatCurrency(grandRemaining)}
-              </p>
-            </div>
+            <p className="mt-3 text-2xl font-bold text-gray-900">{stat.value}</p>
           </div>
-          <Progress
-            value={Math.min(grandPercentage, 100)}
-            className={getProgressColor(grandPercentage)}
-          />
-        </CardContent>
-      </Card>
+        ))}
+      </div>
 
-      {/* Series-Level Budget Table */}
+      {/* Progress Bar */}
+      <div className="card-shadow rounded-2xl bg-white p-5">
+        <div className="flex items-center justify-between mb-3">
+          <p className="text-[13px] font-medium text-gray-500">Overall Budget Usage</p>
+          <span className={`text-[13px] font-semibold ${getStatusColor(grandPercentage)}`}>
+            {grandPercentage.toFixed(1)}%
+          </span>
+        </div>
+        <Progress
+          value={Math.min(grandPercentage, 100)}
+          className={`h-2 ${getProgressColor(grandPercentage)}`}
+        />
+      </div>
+
+      {/* Series-Level Budget */}
       {seriesBudgets.length > 0 && (
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle>Series Budget by Category</CardTitle>
-          </CardHeader>
-          <CardContent className="p-0">
-            <BudgetTable rows={seriesBudgets} />
-          </CardContent>
-        </Card>
+        <div className="card-shadow rounded-2xl bg-white p-6">
+          <h2 className="text-base font-semibold text-gray-900 mb-4">Series Budget by Category</h2>
+          <BudgetGrid rows={seriesBudgets} />
+        </div>
       )}
 
-      {/* Per-Episode Budget Breakdown */}
+      {/* Per-Episode Budgets */}
       {episodeBudgets.length > 0 && (
         <div className="space-y-4">
-          <h2 className="text-xl font-semibold">Per-Episode Budgets</h2>
+          <h2 className="text-base font-semibold text-gray-900">Per-Episode Budgets</h2>
           {episodeBudgets.map((eb) => {
-            const epPercentage =
-              eb.totalAllocated > 0
-                ? (eb.totalSpent / eb.totalAllocated) * 100
-                : 0;
+            const epPercentage = eb.totalAllocated > 0 ? (eb.totalSpent / eb.totalAllocated) * 100 : 0;
             return (
-              <Card key={eb.episodeId}>
-                <CardHeader className="pb-3">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <CardTitle>
-                        Episode {eb.episodeNumber} - {eb.episodeTitle}
-                      </CardTitle>
-                      <CardDescription>
-                        {formatCurrency(eb.totalSpent)} of{" "}
-                        {formatCurrency(eb.totalAllocated)} spent (
-                        {epPercentage.toFixed(1)}%)
-                      </CardDescription>
-                    </div>
-                  </div>
-                  <Progress
-                    value={Math.min(epPercentage, 100)}
-                    className={getProgressColor(epPercentage)}
-                  />
-                </CardHeader>
-                <CardContent className="p-0">
-                  <BudgetTable rows={eb.rows} />
-                </CardContent>
-              </Card>
+              <div key={eb.episodeId} className="card-shadow rounded-2xl bg-white p-6">
+                <div className="flex items-center justify-between mb-1">
+                  <h3 className="text-[14px] font-semibold text-gray-900">
+                    Episode {eb.episodeNumber} — {eb.episodeTitle}
+                  </h3>
+                  <span className={`text-[13px] font-semibold ${getStatusColor(epPercentage)}`}>
+                    {epPercentage.toFixed(1)}%
+                  </span>
+                </div>
+                <p className="text-[12px] text-gray-500 mb-3">
+                  {formatCurrency(eb.totalSpent)} of {formatCurrency(eb.totalAllocated)} spent
+                </p>
+                <Progress
+                  value={Math.min(epPercentage, 100)}
+                  className={`h-1.5 mb-4 ${getProgressColor(epPercentage)}`}
+                />
+                <BudgetGrid rows={eb.rows} />
+              </div>
             );
           })}
         </div>
       )}
 
       {seriesBudgets.length === 0 && episodeBudgets.length === 0 && (
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center py-12">
-            <p className="text-muted-foreground mb-4">
-              No budgets set yet. Allocate your first budget to start tracking
-              spending.
+        <div className="card-shadow rounded-2xl bg-white">
+          <div className="flex flex-col items-center justify-center py-16">
+            <PiggyBank className="h-10 w-10 text-gray-300 mb-3" />
+            <p className="text-sm text-gray-400 mb-4">
+              No budgets set yet. Allocate your first budget to start tracking.
             </p>
             <BudgetForm
               episodes={allEpisodes}
-              trigger={<Button>Set Budget</Button>}
+              trigger={<Button className="rounded-xl bg-gray-900 hover:bg-gray-800">Set Budget</Button>}
             />
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       )}
     </div>
   );
 }
 
-function BudgetTable({ rows }: { rows: BudgetRow[] }) {
+function BudgetGrid({ rows }: { rows: BudgetRow[] }) {
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>Category</TableHead>
-          <TableHead className="text-right">Allocated</TableHead>
-          <TableHead className="text-right">Spent</TableHead>
-          <TableHead className="text-right">Remaining</TableHead>
-          <TableHead className="text-right">% Used</TableHead>
-          <TableHead className="w-[50px]">Actions</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {rows.map((row) => (
-          <TableRow key={row.category}>
-            <TableCell>{categoryLabels[row.category] ?? row.category}</TableCell>
-            <TableCell className="text-right tabular-nums">
-              {formatCurrency(row.allocated)}
-            </TableCell>
-            <TableCell className="text-right tabular-nums">
+    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      {rows.map((row) => (
+        <div key={row.category} className="rounded-xl border border-gray-100 bg-gray-50/50 p-4">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[13px] font-medium text-gray-700">
+              {categoryLabels[row.category] ?? row.category}
+            </span>
+            <DeleteBudgetButton id={row.id} />
+          </div>
+          <div className="flex items-baseline gap-2">
+            <span className="text-lg font-bold text-gray-900 tabular-nums">
               {formatCurrency(row.spent)}
-            </TableCell>
-            <TableCell
-              className={`text-right tabular-nums ${row.remaining < 0 ? "text-red-600" : ""}`}
-            >
-              {formatCurrency(row.remaining)}
-            </TableCell>
-            <TableCell
-              className={`text-right tabular-nums font-medium ${getStatusColor(row.percentage)}`}
-            >
-              {row.percentage.toFixed(1)}%
-            </TableCell>
-            <TableCell>
-              <DeleteBudgetButton id={row.id} />
-            </TableCell>
-          </TableRow>
-        ))}
-      </TableBody>
-    </Table>
+            </span>
+            <span className="text-[12px] text-gray-400">
+              of {formatCurrency(row.allocated)}
+            </span>
+          </div>
+          <Progress
+            value={Math.min(row.percentage, 100)}
+            className={`mt-2 h-1.5 ${getProgressColor(row.percentage)}`}
+          />
+          <div className="mt-1.5 flex items-center justify-between text-[11px]">
+            <span className={`font-medium ${row.remaining < 0 ? "text-red-600" : "text-gray-400"}`}>
+              {formatCurrency(row.remaining)} left
+            </span>
+            <span className={`font-semibold ${getStatusColor(row.percentage)}`}>
+              {row.percentage.toFixed(0)}%
+            </span>
+          </div>
+        </div>
+      ))}
+    </div>
   );
 }

@@ -7,29 +7,24 @@ import {
   locations,
 } from "@/db/schema";
 import { eq, desc, sql, count, sum, gte } from "drizzle-orm";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { formatCurrency } from "@/lib/format";
+import {
+  Film,
+  CheckCircle2,
+  Wallet,
+  TrendingDown,
+  ArrowUpRight,
+  Calendar,
+  MapPin,
+  Clock,
+} from "lucide-react";
 
 const statusColors: Record<string, string> = {
-  pre_production: "bg-yellow-100 text-yellow-800",
-  filming: "bg-blue-100 text-blue-800",
-  post_production: "bg-purple-100 text-purple-800",
-  completed: "bg-green-100 text-green-800",
+  pre_production: "bg-amber-50 text-amber-700 border-amber-200",
+  filming: "bg-blue-50 text-blue-700 border-blue-200",
+  post_production: "bg-violet-50 text-violet-700 border-violet-200",
+  completed: "bg-emerald-50 text-emerald-700 border-emerald-200",
 };
 
 const statusLabels: Record<string, string> = {
@@ -122,188 +117,206 @@ export default async function DashboardPage() {
   }
 
   const totalEpisodes = allEpisodes.length || 10;
+  const budgetNum = parseFloat(totalBudget) || 0;
+  const spentNum = parseFloat(totalSpent) || 0;
+  const remaining = budgetNum - spentNum;
+
+  const statCards = [
+    {
+      label: "Total Episodes",
+      value: totalEpisodes.toString(),
+      icon: Film,
+      color: "bg-gray-900 text-white",
+      iconColor: "text-white",
+    },
+    {
+      label: "Completed",
+      value: completedCount.toString(),
+      icon: CheckCircle2,
+      color: "bg-emerald-50 text-emerald-600",
+      iconColor: "text-emerald-500",
+    },
+    {
+      label: "Total Budget",
+      value: formatCurrency(totalBudget),
+      icon: Wallet,
+      color: "bg-blue-50 text-blue-600",
+      iconColor: "text-blue-500",
+    },
+    {
+      label: "Remaining",
+      value: formatCurrency(remaining.toString()),
+      icon: TrendingDown,
+      color: remaining >= 0 ? "bg-emerald-50 text-emerald-600" : "bg-red-50 text-red-600",
+      iconColor: remaining >= 0 ? "text-emerald-500" : "text-red-500",
+    },
+  ];
 
   return (
-    <div className="space-y-8">
+    <div className="mx-auto max-w-7xl space-y-6">
+      {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">
-          Film Series Dashboard
+        <h1 className="text-2xl font-bold tracking-tight text-gray-900">
+          Dashboard
         </h1>
-        <p className="text-muted-foreground mt-1">
+        <p className="mt-1 text-sm text-gray-500">
           Overview of your production progress
         </p>
       </div>
 
       {/* Stat Cards */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription>Total Episodes</CardDescription>
-            <CardTitle className="text-3xl">{totalEpisodes}</CardTitle>
-          </CardHeader>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription>Episodes Completed</CardDescription>
-            <CardTitle className="text-3xl">{completedCount}</CardTitle>
-          </CardHeader>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription>Total Budget</CardDescription>
-            <CardTitle className="text-3xl">
-              {formatCurrency(totalBudget)}
-            </CardTitle>
-          </CardHeader>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription>Total Spent</CardDescription>
-            <CardTitle className="text-3xl">
-              {formatCurrency(totalSpent)}
-            </CardTitle>
-          </CardHeader>
-        </Card>
+        {statCards.map((stat) => (
+          <div
+            key={stat.label}
+            className="card-shadow rounded-2xl bg-white p-5 transition-shadow hover:shadow-md"
+          >
+            <div className="flex items-center justify-between">
+              <p className="text-[13px] font-medium text-gray-500">{stat.label}</p>
+              <div className={`flex h-9 w-9 items-center justify-center rounded-xl ${stat.color}`}>
+                <stat.icon className="h-4 w-4" />
+              </div>
+            </div>
+            <p className="mt-3 text-2xl font-bold text-gray-900">{stat.value}</p>
+          </div>
+        ))}
       </div>
 
       {/* Episode Progress */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Episode Progress</CardTitle>
-          <CardDescription>Status of all episodes in the series</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {allEpisodes.length === 0 ? (
-            <p className="text-sm text-muted-foreground">
-              No episodes found. Add episodes to get started.
+      <div className="card-shadow rounded-2xl bg-white p-6">
+        <div className="mb-5">
+          <h2 className="text-base font-semibold text-gray-900">Episode Progress</h2>
+          <p className="text-sm text-gray-500">Status of all episodes in the series</p>
+        </div>
+        {allEpisodes.length === 0 ? (
+          <p className="text-sm text-gray-400">
+            No episodes found. Add episodes to get started.
+          </p>
+        ) : (
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+            {allEpisodes.map((ep) => (
+              <div
+                key={ep.id}
+                className="flex items-center justify-between rounded-xl border border-gray-100 bg-gray-50/50 p-3.5 transition-colors hover:bg-gray-50"
+              >
+                <div className="min-w-0">
+                  <p className="text-[13px] font-semibold text-gray-900 truncate">
+                    Ep {ep.number}
+                  </p>
+                  <p className="text-[11px] text-gray-500 truncate">{ep.title}</p>
+                </div>
+                <Badge
+                  variant="outline"
+                  className={`ml-2 shrink-0 border text-[10px] font-medium ${statusColors[ep.status] ?? ""}`}
+                >
+                  {statusLabels[ep.status] ?? ep.status}
+                </Badge>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div className="grid gap-4 lg:grid-cols-2">
+        {/* Recent Expenses */}
+        <div className="card-shadow rounded-2xl bg-white p-6">
+          <div className="mb-5 flex items-center justify-between">
+            <div>
+              <h2 className="text-base font-semibold text-gray-900">Recent Expenses</h2>
+              <p className="text-sm text-gray-500">Last 5 recorded</p>
+            </div>
+            <a href="/expenses" className="flex items-center gap-1 text-xs font-medium text-gray-500 hover:text-gray-900 transition-colors">
+              See all <ArrowUpRight className="h-3 w-3" />
+            </a>
+          </div>
+          {recentExpenses.length === 0 ? (
+            <p className="text-sm text-gray-400">
+              No expenses recorded yet.
             </p>
           ) : (
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-              {allEpisodes.map((ep) => (
-                <div
-                  key={ep.id}
-                  className="flex items-center justify-between rounded-lg border p-3"
-                >
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium truncate">
-                      Ep {ep.number}: {ep.title}
-                    </p>
+            <div className="space-y-3">
+              {recentExpenses.map((exp) => (
+                <div key={exp.id} className="flex items-center justify-between rounded-xl bg-gray-50/80 px-4 py-3">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[13px] font-medium text-gray-900 truncate">{exp.description}</p>
+                    <div className="mt-0.5 flex items-center gap-2">
+                      <span className="text-[11px] text-gray-400 capitalize">{exp.category.replace("_", " ")}</span>
+                      {exp.episodeNumber && (
+                        <span className="text-[11px] text-gray-400">Ep {exp.episodeNumber}</span>
+                      )}
+                    </div>
                   </div>
-                  <Badge
-                    className={`ml-2 shrink-0 ${statusColors[ep.status] ?? ""}`}
-                  >
-                    {statusLabels[ep.status] ?? ep.status}
+                  <div className="text-right ml-3">
+                    <p className="text-[13px] font-semibold text-gray-900">{formatCurrency(exp.amount)}</p>
+                    <Badge
+                      variant="outline"
+                      className={`mt-0.5 text-[10px] border ${
+                        exp.paymentStatus === "paid"
+                          ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                          : exp.paymentStatus === "overdue"
+                            ? "border-red-200 bg-red-50 text-red-700"
+                            : "border-amber-200 bg-amber-50 text-amber-700"
+                      }`}
+                    >
+                      {exp.paymentStatus}
+                    </Badge>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Upcoming Shoots */}
+        <div className="card-shadow rounded-2xl bg-white p-6">
+          <div className="mb-5 flex items-center justify-between">
+            <div>
+              <h2 className="text-base font-semibold text-gray-900">Upcoming Shoots</h2>
+              <p className="text-sm text-gray-500">Next scheduled dates</p>
+            </div>
+            <a href="/schedule" className="flex items-center gap-1 text-xs font-medium text-gray-500 hover:text-gray-900 transition-colors">
+              See all <ArrowUpRight className="h-3 w-3" />
+            </a>
+          </div>
+          {upcomingShoots.length === 0 ? (
+            <p className="text-sm text-gray-400">
+              No upcoming shoots scheduled.
+            </p>
+          ) : (
+            <div className="space-y-3">
+              {upcomingShoots.map((shoot) => (
+                <div
+                  key={shoot.id}
+                  className="flex items-center gap-4 rounded-xl bg-gray-50/80 px-4 py-3"
+                >
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gray-900 text-white">
+                    <Calendar className="h-4 w-4" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[13px] font-medium text-gray-900">
+                      Ep {shoot.episodeNumber}: {shoot.episodeTitle}
+                    </p>
+                    <div className="mt-0.5 flex items-center gap-3">
+                      {shoot.locationName && (
+                        <span className="flex items-center gap-1 text-[11px] text-gray-400">
+                          <MapPin className="h-3 w-3" /> {shoot.locationName}
+                        </span>
+                      )}
+                      {shoot.callTime && (
+                        <span className="flex items-center gap-1 text-[11px] text-gray-400">
+                          <Clock className="h-3 w-3" /> {shoot.callTime}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <Badge variant="outline" className="shrink-0 border-gray-200 text-[11px] text-gray-600">
+                    {shoot.date}
                   </Badge>
                 </div>
               ))}
             </div>
           )}
-        </CardContent>
-      </Card>
-
-      <div className="grid gap-6 lg:grid-cols-2">
-        {/* Recent Expenses */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Recent Expenses</CardTitle>
-            <CardDescription>Last 5 recorded expenses</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {recentExpenses.length === 0 ? (
-              <p className="text-sm text-muted-foreground">
-                No expenses recorded yet.
-              </p>
-            ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Description</TableHead>
-                    <TableHead>Episode</TableHead>
-                    <TableHead>Category</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="text-right">Amount</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {recentExpenses.map((exp) => (
-                    <TableRow key={exp.id}>
-                      <TableCell className="font-medium truncate max-w-[180px]">
-                        {exp.description}
-                      </TableCell>
-                      <TableCell className="text-muted-foreground">
-                        {exp.episodeNumber ? `Ep ${exp.episodeNumber}` : "—"}
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="outline" className="capitalize">
-                          {exp.category.replace("_", " ")}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <Badge
-                          className={
-                            exp.paymentStatus === "paid"
-                              ? "bg-green-100 text-green-800"
-                              : exp.paymentStatus === "overdue"
-                                ? "bg-red-100 text-red-800"
-                                : "bg-yellow-100 text-yellow-800"
-                          }
-                        >
-                          {exp.paymentStatus}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-right font-medium">
-                        {formatCurrency(exp.amount)}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Upcoming Shoots */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Upcoming Shoots</CardTitle>
-            <CardDescription>Next 5 scheduled shoot dates</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {upcomingShoots.length === 0 ? (
-              <p className="text-sm text-muted-foreground">
-                No upcoming shoots scheduled.
-              </p>
-            ) : (
-              <div className="space-y-3">
-                {upcomingShoots.map((shoot) => (
-                  <div
-                    key={shoot.id}
-                    className="flex items-start justify-between rounded-lg border p-3"
-                  >
-                    <div>
-                      <p className="text-sm font-medium">
-                        Ep {shoot.episodeNumber}: {shoot.episodeTitle}
-                      </p>
-                      {shoot.locationName && (
-                        <p className="text-xs text-muted-foreground">
-                          {shoot.locationName}
-                        </p>
-                      )}
-                      {(shoot.callTime || shoot.wrapTime) && (
-                        <p className="text-xs text-muted-foreground">
-                          {shoot.callTime && `Call: ${shoot.callTime}`}
-                          {shoot.callTime && shoot.wrapTime && " — "}
-                          {shoot.wrapTime && `Wrap: ${shoot.wrapTime}`}
-                        </p>
-                      )}
-                    </div>
-                    <Badge variant="outline">{shoot.date}</Badge>
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+        </div>
       </div>
     </div>
   );

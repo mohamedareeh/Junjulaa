@@ -1,12 +1,6 @@
 import { db } from "@/db";
 import { desc } from "drizzle-orm";
 import { costumes, castMembers, episodes, scenes } from "@/db/schema";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Shirt } from "lucide-react";
@@ -48,11 +42,11 @@ export default async function CostumesPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="mx-auto max-w-7xl space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Costumes</h1>
-          <p className="text-muted-foreground mt-1">
+          <h1 className="text-2xl font-bold tracking-tight text-gray-900">Costumes</h1>
+          <p className="mt-1 text-sm text-gray-500">
             Manage costumes for the series
           </p>
         </div>
@@ -60,71 +54,68 @@ export default async function CostumesPage() {
           episodes={allEpisodes}
           castMembers={allCastMembers}
           scenes={allScenes}
-          trigger={<Button>Add Costume</Button>}
+          trigger={<Button className="rounded-xl bg-gray-900 hover:bg-gray-800">Add Costume</Button>}
         />
       </div>
 
       {allCostumes.length === 0 ? (
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center py-12">
-            <p className="text-muted-foreground mb-4">
+        <div className="card-shadow rounded-2xl bg-white">
+          <div className="flex flex-col items-center justify-center py-16">
+            <Shirt className="h-10 w-10 text-gray-300 mb-3" />
+            <p className="text-sm text-gray-400 mb-4">
               No costumes yet. Add your first costume to get started.
             </p>
             <CostumeForm
               episodes={allEpisodes}
               castMembers={allCastMembers}
               scenes={allScenes}
-              trigger={<Button>Add Costume</Button>}
+              trigger={<Button className="rounded-xl bg-gray-900 hover:bg-gray-800">Add Costume</Button>}
             />
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {allCostumes.map((costume) => (
-            <Card
+            <div
               key={costume.id}
-              className="transition-shadow hover:shadow-md h-full"
+              className="card-shadow group rounded-2xl bg-white overflow-hidden transition-all hover:shadow-md"
             >
-              <CardHeader className="pb-2">
+              {/* Photo */}
+              <div className="aspect-square w-full overflow-hidden bg-gray-50 flex items-center justify-center">
+                {costume.photoUrl ? (
+                  <img
+                    src={costume.photoUrl}
+                    alt={costume.name}
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <Shirt className="h-12 w-12 text-gray-300" />
+                )}
+              </div>
+
+              <div className="p-4">
                 <div className="flex items-start justify-between">
-                  <CardTitle className="text-base truncate">
+                  <h3 className="text-[13px] font-semibold text-gray-900 truncate">
                     {costume.name}
-                  </CardTitle>
+                  </h3>
                   <DeleteCostumeButton id={costume.id} />
                 </div>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {/* Photo or placeholder */}
-                <div className="aspect-square w-full overflow-hidden rounded-md bg-slate-100 flex items-center justify-center">
-                  {costume.photoUrl ? (
-                    <img
-                      src={costume.photoUrl}
-                      alt={costume.name}
-                      className="h-full w-full object-cover"
-                    />
-                  ) : (
-                    <Shirt className="h-12 w-12 text-slate-400" />
-                  )}
-                </div>
-
-                <div className="space-y-1 text-sm text-muted-foreground">
+                <div className="mt-2 space-y-1">
                   {costume.castMember && (
-                    <p>Worn by: {costume.castMember.name}</p>
+                    <p className="text-[12px] text-gray-500">Worn by {costume.castMember.name}</p>
                   )}
                   {costume.episode && (
-                    <p>
+                    <p className="text-[12px] text-gray-400">
                       Ep {costume.episode.number} — {costume.episode.title}
                     </p>
                   )}
-                  <div className="flex items-center gap-1">
-                    <Badge variant="secondary">
-                      {costume.scenes.length}{" "}
-                      {costume.scenes.length === 1 ? "scene" : "scenes"}
-                    </Badge>
-                  </div>
+                  <Badge variant="outline" className="mt-1 rounded-lg border-gray-200 text-[10px] text-gray-500">
+                    {costume.scenes.length}{" "}
+                    {costume.scenes.length === 1 ? "scene" : "scenes"}
+                  </Badge>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           ))}
         </div>
       )}

@@ -70,6 +70,7 @@ type EpisodeWithRelations = Episode & {
     timeOfDay: string | null;
     duration: string | null;
     continuitySceneId: number | null;
+    scriptUrl: string | null;
     cast: Array<{
       id: number;
       castMember: CastMember;
@@ -381,6 +382,16 @@ export default async function EpisodeDetailPage({
                               Props: {scene.props}
                             </p>
                           )}
+                          {scene.scriptUrl && (
+                            <a
+                              href={scene.scriptUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-block text-xs text-blue-600 hover:underline mt-1"
+                            >
+                              View Script
+                            </a>
+                          )}
                         </div>
                         <div className="flex items-center gap-1">
                           <SceneForm
@@ -396,6 +407,7 @@ export default async function EpisodeDetailPage({
                               timeOfDay: scene.timeOfDay,
                               duration: scene.duration,
                               continuitySceneId: scene.continuitySceneId,
+                              scriptUrl: scene.scriptUrl,
                             }}
                             locations={allLocations}
                             castMembers={allCastMembers}

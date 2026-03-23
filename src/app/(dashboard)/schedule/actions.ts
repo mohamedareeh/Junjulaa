@@ -9,6 +9,7 @@ export async function createSchedule(formData: FormData) {
   try {
     const episodeId = formData.get("episodeId") as string;
     const locationId = formData.get("locationId") as string;
+    const sceneIdRaw = formData.get("sceneId") as string;
     const date = formData.get("date") as string;
     const callTime = formData.get("callTime") as string;
     const wrapTime = formData.get("wrapTime") as string;
@@ -17,6 +18,7 @@ export async function createSchedule(formData: FormData) {
     await db.insert(schedules).values({
       episodeId: parseInt(episodeId, 10),
       locationId: locationId ? parseInt(locationId, 10) : null,
+      sceneId: sceneIdRaw ? parseInt(sceneIdRaw, 10) : null,
       date,
       callTime: callTime || null,
       wrapTime: wrapTime || null,
@@ -34,6 +36,7 @@ export async function updateSchedule(id: number, formData: FormData) {
   try {
     const episodeId = formData.get("episodeId") as string;
     const locationId = formData.get("locationId") as string;
+    const sceneIdRaw = formData.get("sceneId") as string;
     const date = formData.get("date") as string;
     const callTime = formData.get("callTime") as string;
     const wrapTime = formData.get("wrapTime") as string;
@@ -44,6 +47,7 @@ export async function updateSchedule(id: number, formData: FormData) {
       .set({
         episodeId: parseInt(episodeId, 10),
         locationId: locationId ? parseInt(locationId, 10) : null,
+        sceneId: sceneIdRaw ? parseInt(sceneIdRaw, 10) : null,
         date,
         callTime: callTime || null,
         wrapTime: wrapTime || null,

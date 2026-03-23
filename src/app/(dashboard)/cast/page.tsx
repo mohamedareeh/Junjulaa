@@ -1,10 +1,6 @@
 import { db } from "@/db";
 import { castMembers } from "@/db/schema";
 import { like, desc } from "drizzle-orm";
-import {
-  Card,
-  CardContent,
-} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { CastForm } from "@/components/cast/cast-form";
@@ -12,6 +8,7 @@ import { CastSearch } from "@/components/cast/cast-search";
 import { formatCurrency } from "@/lib/format";
 import Link from "next/link";
 import { Suspense } from "react";
+import { Users } from "lucide-react";
 import type { CastMember } from "@/db/schema";
 
 function getInitials(name: string) {
@@ -49,15 +46,15 @@ export default async function CastPage({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="mx-auto max-w-7xl space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Cast</h1>
-          <p className="text-muted-foreground mt-1">
+          <h1 className="text-2xl font-bold tracking-tight text-gray-900">Cast</h1>
+          <p className="mt-1 text-sm text-gray-500">
             Manage cast members for the series
           </p>
         </div>
-        <CastForm trigger={<Button>Add Cast Member</Button>} />
+        <CastForm trigger={<Button className="rounded-xl bg-gray-900 hover:bg-gray-800">Add Cast Member</Button>} />
       </div>
 
       <Suspense fallback={null}>
@@ -65,41 +62,42 @@ export default async function CastPage({
       </Suspense>
 
       {allCast.length === 0 ? (
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center py-12">
-            <p className="text-muted-foreground mb-4">
+        <div className="card-shadow rounded-2xl bg-white">
+          <div className="flex flex-col items-center justify-center py-16">
+            <Users className="h-10 w-10 text-gray-300 mb-3" />
+            <p className="text-sm text-gray-400 mb-4">
               {q
                 ? "No cast members match your search."
                 : "No cast members yet. Add your first cast member to get started."}
             </p>
             {!q && (
-              <CastForm trigger={<Button>Add Cast Member</Button>} />
+              <CastForm trigger={<Button className="rounded-xl bg-gray-900 hover:bg-gray-800">Add Cast Member</Button>} />
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {allCast.map((member) => (
             <Link key={member.id} href={`/cast/${member.id}`}>
-              <Card className="transition-shadow hover:shadow-md h-full">
-                <CardContent className="flex items-center gap-4 p-5">
-                  <Avatar size="lg">
-                    {member.headshotUrl && (
-                      <AvatarImage src={member.headshotUrl} alt={member.name} />
-                    )}
-                    <AvatarFallback>{getInitials(member.name)}</AvatarFallback>
-                  </Avatar>
-                  <div className="min-w-0 flex-1">
-                    <p className="font-medium truncate">{member.name}</p>
-                    {member.dayRate && (
-                      <p className="text-sm text-muted-foreground">
-                        {formatCurrency(member.dayRate)}
-                        {member.paymentType === "per_episode" ? "/day (Per Episode)" : " (One-Time)"}
-                      </p>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
+              <div className="card-shadow flex items-center gap-4 rounded-2xl bg-white p-4 transition-all hover:shadow-md">
+                <Avatar size="lg">
+                  {member.headshotUrl && (
+                    <AvatarImage src={member.headshotUrl} alt={member.name} />
+                  )}
+                  <AvatarFallback className="bg-gray-100 text-gray-600 text-sm font-semibold">
+                    {getInitials(member.name)}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="min-w-0 flex-1">
+                  <p className="text-[13px] font-semibold text-gray-900 truncate">{member.name}</p>
+                  {member.dayRate && (
+                    <p className="text-[12px] text-gray-400">
+                      {formatCurrency(member.dayRate)}
+                      {member.paymentType === "per_episode" ? "/day" : " (One-Time)"}
+                    </p>
+                  )}
+                </div>
+              </div>
             </Link>
           ))}
         </div>

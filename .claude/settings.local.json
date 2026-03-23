@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(SHELL=/bin/zsh HOME=/Users/mohamedareeh ls -la /Users/mohamedareeh/)",
+      "Bash(npx --yes create-next-app@latest temp-app --typescript --tailwind --eslint --app --src-dir --import-alias \"@/*\" --use-npm --turbopack 2)",
+      "Bash(1:*)",
+      "Bash(npx --yes create-next-app@latest temp-app --typescript --tailwind --eslint --app --src-dir --import-alias \"@/*\" --use-npm --turbopack --yes)",
+      "Bash(shopt -s dotglob)",
+      "Bash(mv /Users/mohamedareeh/JuneJunal/temp-app/* /Users/mohamedareeh/JuneJunal/)",
+      "Bash(npm install:*)",
+      "Bash(npx --yes shadcn@latest init --yes)"
+    ]
+  }
+}

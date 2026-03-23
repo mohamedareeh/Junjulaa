@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { X } from "lucide-react";
+import { ImageUpload } from "@/components/image-upload";
 import {
   createCostume,
   updateCostume,
@@ -62,6 +63,9 @@ export function CostumeForm({
   const [selectedScenes, setSelectedScenes] = useState<number[]>(
     costume?.sceneIds ?? []
   );
+  const [photoUrl, setPhotoUrl] = useState<string | null>(
+    costume?.photoUrl ?? null
+  );
 
   const filteredScenes = useMemo(() => {
     if (!episodeId) return [];
@@ -84,6 +88,7 @@ export function CostumeForm({
   async function handleSubmit(formData: FormData) {
     if (castMemberId) formData.set("castMemberId", castMemberId);
     if (episodeId) formData.set("episodeId", episodeId);
+    if (photoUrl) formData.set("photoUrl", photoUrl);
     selectedScenes.forEach((id) => formData.append("sceneIds", String(id)));
 
     startTransition(async () => {
@@ -139,13 +144,8 @@ export function CostumeForm({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="photoUrl">Photo URL</Label>
-              <Input
-                id="photoUrl"
-                name="photoUrl"
-                defaultValue={costume?.photoUrl ?? ""}
-                placeholder="https://... paste image URL"
-              />
+              <Label>Photo</Label>
+              <ImageUpload value={photoUrl} onChange={setPhotoUrl} />
             </div>
 
             <div className="grid grid-cols-2 gap-4">

@@ -22,6 +22,7 @@ import {
   Clock,
   ChevronRight,
 } from "lucide-react";
+import { DashboardShoots } from "./dashboard-shoots";
 
 const statusColors: Record<string, string> = {
   pre_production: "bg-amber-50 text-amber-700 border-amber-200",
@@ -287,53 +288,7 @@ export default async function DashboardPage() {
               See all <ArrowUpRight className="h-3 w-3" />
             </a>
           </div>
-          {upcomingShoots.length === 0 ? (
-            <p className="text-sm text-gray-400">
-              No upcoming shoots scheduled.
-            </p>
-          ) : (
-            <div className="space-y-3">
-              {upcomingShoots.map((shoot) => (
-                <Link
-                  key={shoot.id}
-                  href={`/episodes/${shoot.episodeId}`}
-                  className="flex items-center gap-4 rounded-xl bg-gray-50/80 px-4 py-3 transition-colors hover:bg-gray-100/80 group"
-                >
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gray-900 text-white">
-                    <Calendar className="h-4 w-4" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-[13px] font-medium text-gray-900">
-                      Ep {shoot.episodeNumber}: {shoot.episodeTitle}
-                    </p>
-                    {shoot.sceneNumber != null && (
-                      <p className="text-[11px] text-gray-500">
-                        Scene {shoot.sceneNumber}{shoot.sceneTitle ? ` — ${shoot.sceneTitle}` : ""}
-                      </p>
-                    )}
-                    <div className="mt-0.5 flex items-center gap-3">
-                      {shoot.locationName && (
-                        <span className="flex items-center gap-1 text-[11px] text-gray-400">
-                          <MapPin className="h-3 w-3" /> {shoot.locationName}
-                        </span>
-                      )}
-                      {shoot.callTime && (
-                        <span className="flex items-center gap-1 text-[11px] text-gray-400">
-                          <Clock className="h-3 w-3" /> {shoot.callTime}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 shrink-0">
-                    <Badge variant="outline" className="border-gray-200 text-[11px] text-gray-600">
-                      {shoot.date}
-                    </Badge>
-                    <ChevronRight className="h-4 w-4 text-gray-300 group-hover:text-gray-500 transition-colors" />
-                  </div>
-                </Link>
-              ))}
-            </div>
-          )}
+          <DashboardShoots shoots={upcomingShoots} />
         </div>
       </div>
     </div>

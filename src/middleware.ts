@@ -27,7 +27,7 @@ export default auth((req) => {
     const role = (req.auth?.user as { role?: string })?.role;
     if (role === "crew") {
       const pathname = req.nextUrl.pathname;
-      const allowedPaths = ["/my-scripts", "/schedule"];
+      const allowedPaths = ["/my-scripts", "/schedule", "/change-password"];
       const isAllowed = allowedPaths.some((p) => pathname.startsWith(p));
 
       // Redirect crew from root to /my-scripts

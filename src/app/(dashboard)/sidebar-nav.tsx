@@ -17,6 +17,7 @@ import {
   LogOut,
   Clapperboard,
   Ellipsis,
+  KeyRound,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -40,11 +41,13 @@ const producerNavItems = [
   { label: "Schedule", href: "/schedule", icon: CalendarDays },
   { label: "Documents", href: "/documents", icon: FileText },
   { label: "Settings", href: "/settings", icon: Settings },
+  { label: "Password", href: "/change-password", icon: KeyRound },
 ];
 
 const crewNavItems = [
   { label: "My Scripts", href: "/my-scripts", icon: FileText },
   { label: "Schedule", href: "/schedule", icon: CalendarDays },
+  { label: "Password", href: "/change-password", icon: KeyRound },
 ];
 
 // Bottom bar shows 4 primary items + "More" for producers

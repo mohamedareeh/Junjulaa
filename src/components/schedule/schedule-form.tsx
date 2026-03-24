@@ -32,6 +32,7 @@ interface ScheduleFormProps {
   locations: { id: number; name: string }[];
   scenes: { id: number; episodeId: number; sceneNumber: number; title: string | null }[];
   trigger: React.ReactNode;
+  defaultDate?: string;
 }
 
 export function ScheduleForm({
@@ -40,6 +41,7 @@ export function ScheduleForm({
   locations,
   scenes,
   trigger,
+  defaultDate,
 }: ScheduleFormProps) {
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
@@ -149,7 +151,7 @@ export function ScheduleForm({
               name="date"
               type="date"
               required
-              defaultValue={schedule?.date ?? ""}
+              defaultValue={schedule?.date ?? defaultDate ?? ""}
               className="w-full"
             />
           </div>

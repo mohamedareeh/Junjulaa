@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScheduleForm } from "@/components/schedule/schedule-form";
 import { DeleteScheduleButton } from "@/components/schedule/delete-schedule-button";
+import Link from "next/link";
 import { Calendar, Clock, MapPin, Film } from "lucide-react";
 
 export default async function SchedulePage() {
@@ -175,15 +176,15 @@ export default async function SchedulePage() {
                       </div>
 
                       {/* Entry card */}
-                      <div className="card-shadow flex-1 rounded-2xl bg-white p-4 sm:p-5">
+                      <div className="card-shadow flex-1 rounded-2xl bg-white p-4 sm:p-5 transition-colors hover:bg-gray-50/50">
                         <div className="flex items-start gap-3">
                           {/* Episode badge */}
-                          <div className="flex h-10 w-10 sm:h-11 sm:w-11 shrink-0 flex-col items-center justify-center rounded-xl bg-gray-900 text-white">
+                          <Link href={`/episodes/${entry.episodeId}`} className="flex h-10 w-10 sm:h-11 sm:w-11 shrink-0 flex-col items-center justify-center rounded-xl bg-gray-900 text-white hover:bg-gray-800 transition-colors">
                             <span className="text-[8px] font-medium uppercase tracking-wider opacity-70">EP</span>
                             <span className="text-base font-bold leading-none">{entry.episodeNumber}</span>
-                          </div>
+                          </Link>
 
-                          <div className="flex-1 min-w-0">
+                          <Link href={`/episodes/${entry.episodeId}`} className="flex-1 min-w-0">
                             {/* Scene info (primary) */}
                             {entry.sceneId && entry.sceneNumber != null ? (
                               <>
@@ -234,7 +235,7 @@ export default async function SchedulePage() {
                             {entry.notes && (
                               <p className="text-[11px] text-gray-400 mt-1.5 truncate">{entry.notes}</p>
                             )}
-                          </div>
+                          </Link>
 
                           <DeleteScheduleButton id={entry.id} />
                         </div>

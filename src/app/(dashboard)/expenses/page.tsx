@@ -151,7 +151,7 @@ export default async function ExpensesPage({
                   <p className="text-[13px] font-medium text-gray-900 truncate">{row.description}</p>
                   <div className="mt-0.5 flex items-center gap-3 text-[11px] text-gray-400">
                     <span>{row.date}</span>
-                    {row.episodeNumber != null && <span>Ep {row.episodeNumber}</span>}
+                    <span>{row.episodeNumber != null ? `Ep ${row.episodeNumber}` : "General"}</span>
                     <span className="capitalize">{row.category.replace("_", " ")}</span>
                     <Badge variant="outline" className="text-[10px] border-gray-200">
                       {row.paymentType === "per_episode" ? "Per Episode" : "One-Time"}

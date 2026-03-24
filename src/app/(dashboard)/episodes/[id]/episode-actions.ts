@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "@/db";
-import { episodeCast, episodeCrew } from "@/db/schema";
+import { episodeCast, episodeCrew, castMembers, crewMembers, expenses, episodes } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
@@ -11,6 +11,28 @@ export async function addCastToEpisode(formData: FormData) {
   const roleName = formData.get("roleName") as string;
 
   await db.insert(episodeCast).values({ episodeId, castMemberId, roleName });
+
+  // Auto-create expense for cast payment if they have a day rate
+  const [castMember] = await db
+    .select({ name: castMembers.name, dayRate: castMembers.dayRate, paymentType: castMembers.paymentType })
+    .from(castMembers)
+    .where(eq(castMembers.id, castMemberId))
+    .limit(1);
+
+  if (castMember?.dayRate && parseFloat(castMember.dayRate) > 0) {
+    const today = new Date().toISOString().split("T")[0];
+    await db.insert(expenses).values({
+      episodeId,
+      category: "talent",
+      description: `Cast payment: ${castMember.name} (${roleName})`,
+      amount: castMember.dayRate,
+      date: today,
+      paymentType: castMember.paymentType,
+      paymentStatus: "pending",
+    });
+    revalidatePath("/expenses");
+  }
+
   revalidatePath(`/episodes/${episodeId}`);
 }
 
@@ -25,6 +47,28 @@ export async function addCrewToEpisode(formData: FormData) {
   const notes = (formData.get("notes") as string) || null;
 
   await db.insert(episodeCrew).values({ episodeId, crewMemberId, notes });
+
+  // Auto-create expense for crew payment if they have a day rate
+  const [crewMember] = await db
+    .select({ name: crewMembers.name, dayRate: crewMembers.dayRate, paymentType: crewMembers.paymentType, roleTitle: crewMembers.roleTitle })
+    .from(crewMembers)
+    .where(eq(crewMembers.id, crewMemberId))
+    .limit(1);
+
+  if (crewMember?.dayRate && parseFloat(crewMember.dayRate) > 0) {
+    const today = new Date().toISOString().split("T")[0];
+    await db.insert(expenses).values({
+      episodeId,
+      category: "talent",
+      description: `Crew payment: ${crewMember.name} (${crewMember.roleTitle})`,
+      amount: crewMember.dayRate,
+      date: today,
+      paymentType: crewMember.paymentType,
+      paymentStatus: "pending",
+    });
+    revalidatePath("/expenses");
+  }
+
   revalidatePath(`/episodes/${episodeId}`);
 }
 

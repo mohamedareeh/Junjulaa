@@ -115,12 +115,13 @@ export function ExpenseForm({ expense, episodes, categories: initialCategories, 
               <Label htmlFor="episodeId">Episode</Label>
               <Select
                 value={episodeId}
-                onValueChange={(val) => setEpisodeId(val ?? "")}
+                onValueChange={(val) => setEpisodeId(val === "general" ? "" : val ?? "")}
               >
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Select episode" />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="general">General (No Episode)</SelectItem>
                   {episodes.map((ep) => (
                     <SelectItem key={ep.id} value={String(ep.id)}>
                       Ep {ep.number} - {ep.title}

@@ -5,10 +5,12 @@ import {
   budgets,
   schedules,
   locations,
+  scenes,
 } from "@/db/schema";
 import { eq, desc, sql, count, sum, gte } from "drizzle-orm";
 import { Badge } from "@/components/ui/badge";
 import { formatCurrency } from "@/lib/format";
+import Link from "next/link";
 import {
   Film,
   CheckCircle2,
@@ -18,6 +20,7 @@ import {
   Calendar,
   MapPin,
   Clock,
+  ChevronRight,
 } from "lucide-react";
 
 const statusColors: Record<string, string> = {
@@ -54,9 +57,12 @@ export default async function DashboardPage() {
     callTime: string | null;
     wrapTime: string | null;
     notes: string | null;
+    episodeId: number;
     episodeTitle: string;
     episodeNumber: number;
     locationName: string | null;
+    sceneNumber: number | null;
+    sceneTitle: string | null;
   }[] = [];
 
   try {
@@ -101,13 +107,17 @@ export default async function DashboardPage() {
         callTime: schedules.callTime,
         wrapTime: schedules.wrapTime,
         notes: schedules.notes,
+        episodeId: episodes.id,
         episodeTitle: episodes.title,
         episodeNumber: episodes.number,
         locationName: locations.name,
+        sceneNumber: scenes.sceneNumber,
+        sceneTitle: scenes.title,
       })
       .from(schedules)
       .innerJoin(episodes, eq(schedules.episodeId, episodes.id))
       .leftJoin(locations, eq(schedules.locationId, locations.id))
+      .leftJoin(scenes, eq(schedules.sceneId, scenes.id))
       .where(gte(schedules.date, today))
       .orderBy(schedules.date)
       .limit(5);
@@ -195,9 +205,10 @@ export default async function DashboardPage() {
         ) : (
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
             {allEpisodes.map((ep) => (
-              <div
+              <Link
                 key={ep.id}
-                className="flex items-center justify-between rounded-xl border border-gray-100 bg-gray-50/50 p-3.5 transition-colors hover:bg-gray-50"
+                href={`/episodes/${ep.id}`}
+                className="flex items-center justify-between rounded-xl border border-gray-100 bg-gray-50/50 p-3.5 transition-colors hover:bg-gray-100/80 hover:border-gray-200"
               >
                 <div className="min-w-0">
                   <p className="text-[13px] font-semibold text-gray-900 truncate">
@@ -211,7 +222,7 @@ export default async function DashboardPage() {
                 >
                   {statusLabels[ep.status] ?? ep.status}
                 </Badge>
-              </div>
+              </Link>
             ))}
           </div>
         )}
@@ -236,14 +247,12 @@ export default async function DashboardPage() {
           ) : (
             <div className="space-y-3">
               {recentExpenses.map((exp) => (
-                <div key={exp.id} className="flex items-center justify-between rounded-xl bg-gray-50/80 px-4 py-3">
+                <Link key={exp.id} href="/expenses" className="flex items-center justify-between rounded-xl bg-gray-50/80 px-4 py-3 transition-colors hover:bg-gray-100/80">
                   <div className="min-w-0 flex-1">
                     <p className="text-[13px] font-medium text-gray-900 truncate">{exp.description}</p>
                     <div className="mt-0.5 flex items-center gap-2">
                       <span className="text-[11px] text-gray-400 capitalize">{exp.category.replace("_", " ")}</span>
-                      {exp.episodeNumber && (
-                        <span className="text-[11px] text-gray-400">Ep {exp.episodeNumber}</span>
-                      )}
+                      <span className="text-[11px] text-gray-400">{exp.episodeNumber ? `Ep ${exp.episodeNumber}` : "General"}</span>
                     </div>
                   </div>
                   <div className="text-right ml-3">
@@ -261,7 +270,7 @@ export default async function DashboardPage() {
                       {exp.paymentStatus}
                     </Badge>
                   </div>
-                </div>
+                </Link>
               ))}
             </div>
           )}
@@ -285,9 +294,10 @@ export default async function DashboardPage() {
           ) : (
             <div className="space-y-3">
               {upcomingShoots.map((shoot) => (
-                <div
+                <Link
                   key={shoot.id}
-                  className="flex items-center gap-4 rounded-xl bg-gray-50/80 px-4 py-3"
+                  href={`/episodes/${shoot.episodeId}`}
+                  className="flex items-center gap-4 rounded-xl bg-gray-50/80 px-4 py-3 transition-colors hover:bg-gray-100/80 group"
                 >
                   <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gray-900 text-white">
                     <Calendar className="h-4 w-4" />
@@ -296,6 +306,11 @@ export default async function DashboardPage() {
                     <p className="text-[13px] font-medium text-gray-900">
                       Ep {shoot.episodeNumber}: {shoot.episodeTitle}
                     </p>
+                    {shoot.sceneNumber != null && (
+                      <p className="text-[11px] text-gray-500">
+                        Scene {shoot.sceneNumber}{shoot.sceneTitle ? ` — ${shoot.sceneTitle}` : ""}
+                      </p>
+                    )}
                     <div className="mt-0.5 flex items-center gap-3">
                       {shoot.locationName && (
                         <span className="flex items-center gap-1 text-[11px] text-gray-400">
@@ -309,10 +324,13 @@ export default async function DashboardPage() {
                       )}
                     </div>
                   </div>
-                  <Badge variant="outline" className="shrink-0 border-gray-200 text-[11px] text-gray-600">
-                    {shoot.date}
-                  </Badge>
-                </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <Badge variant="outline" className="border-gray-200 text-[11px] text-gray-600">
+                      {shoot.date}
+                    </Badge>
+                    <ChevronRight className="h-4 w-4 text-gray-300 group-hover:text-gray-500 transition-colors" />
+                  </div>
+                </Link>
               ))}
             </div>
           )}

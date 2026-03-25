@@ -83,7 +83,8 @@ export default async function ExpensesPage({
     expenseRows = rows;
 
     for (const row of rows) {
-      const amt = parseFloat(row.amount);
+      const baseAmt = parseFloat(row.amount);
+      const amt = row.paymentType === "per_episode" ? baseAmt * 10 : baseAmt;
       totals.total += amt;
       if (row.paymentStatus === "paid") totals.paid += amt;
       else if (row.paymentStatus === "pending") totals.pending += amt;
@@ -161,8 +162,15 @@ export default async function ExpensesPage({
                 <div className="flex items-center gap-3 shrink-0">
                   <div className="text-right">
                     <p className="text-[13px] font-semibold text-gray-900 tabular-nums">
-                      {formatCurrency(row.amount)}
+                      {row.paymentType === "per_episode"
+                        ? formatCurrency((parseFloat(row.amount) * 10).toString())
+                        : formatCurrency(row.amount)}
                     </p>
+                    {row.paymentType === "per_episode" && (
+                      <p className="text-[10px] text-gray-400">
+                        {formatCurrency(row.amount)} × 10 eps
+                      </p>
+                    )}
                     <Badge
                       variant="outline"
                       className={`mt-0.5 text-[10px] border ${statusColors[row.paymentStatus] ?? ""}`}

@@ -185,7 +185,10 @@ export default async function EpisodeDetailPage({
   }
 
   const totalExpenses = episode.expenses.reduce(
-    (sum, exp) => sum + Number(exp.amount),
+    (sum, exp) => {
+      const base = Number(exp.amount);
+      return sum + (exp.paymentType === "per_episode" ? base * 10 : base);
+    },
     0
   );
 
@@ -514,9 +517,16 @@ export default async function EpisodeDetailPage({
                   <p className="text-[13px] font-medium text-gray-900 truncate">{exp.description}</p>
                   <p className="text-[11px] text-gray-400 capitalize">{exp.category.replace("_", " ")}{exp.date ? ` — ${exp.date}` : ""}</p>
                 </div>
-                <p className="text-[13px] font-semibold text-gray-900 tabular-nums shrink-0 ml-3">
-                  {formatCurrency(exp.amount)}
-                </p>
+                <div className="text-right shrink-0 ml-3">
+                  <p className="text-[13px] font-semibold text-gray-900 tabular-nums">
+                    {exp.paymentType === "per_episode"
+                      ? formatCurrency((Number(exp.amount) * 10).toString())
+                      : formatCurrency(exp.amount)}
+                  </p>
+                  {exp.paymentType === "per_episode" && (
+                    <p className="text-[10px] text-gray-400">{formatCurrency(exp.amount)} × 10 eps</p>
+                  )}
+                </div>
               </div>
             ))}
             <div className="flex items-center justify-between px-4 py-3 sm:px-5 bg-gray-50/50">

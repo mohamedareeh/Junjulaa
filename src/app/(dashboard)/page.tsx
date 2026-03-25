@@ -81,7 +81,9 @@ export default async function DashboardPage() {
     totalBudget = budgetResult?.value ?? "0";
 
     const [spentResult] = await db
-      .select({ value: sum(expenses.amount) })
+      .select({
+        value: sql<string>`coalesce(sum(case when ${expenses.paymentType} = 'per_episode' then ${expenses.amount} * 10 else ${expenses.amount} end), 0)`,
+      })
       .from(expenses);
     totalSpent = spentResult?.value ?? "0";
 

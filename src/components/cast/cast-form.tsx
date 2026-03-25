@@ -27,7 +27,7 @@ import {
 import type { CastMember } from "@/db/schema";
 
 interface CastFormProps {
-  castMember?: CastMember;
+  castMember?: CastMember & { username?: string | null };
   trigger: React.ReactNode;
 }
 
@@ -58,7 +58,7 @@ export function CastForm({ castMember, trigger }: CastFormProps) {
     <>
       <div onClick={() => setOpen(true)}>{trigger}</div>
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="sm:max-w-lg">
+        <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
             {castMember ? "Edit Cast Member" : "Add Cast Member"}
@@ -66,19 +66,30 @@ export function CastForm({ castMember, trigger }: CastFormProps) {
           <DialogDescription>
             {castMember
               ? "Update the cast member details below."
-              : "Fill in the details for the new cast member."}
+              : "Fill in the details for the new cast member. You can add the real name later."}
           </DialogDescription>
         </DialogHeader>
         <form action={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="name">Name</Label>
-            <Input
-              id="name"
-              name="name"
-              required
-              defaultValue={castMember?.name ?? ""}
-              placeholder="Full name"
-            />
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="characterName">Character Name</Label>
+              <Input
+                id="characterName"
+                name="characterName"
+                defaultValue={castMember?.characterName ?? ""}
+                placeholder="e.g. Detective Karim"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="name">Real Name</Label>
+              <Input
+                id="name"
+                name="name"
+                required
+                defaultValue={castMember?.name ?? ""}
+                placeholder="Full name (can add later)"
+              />
+            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -103,6 +114,22 @@ export function CastForm({ castMember, trigger }: CastFormProps) {
             </div>
           </div>
 
+          {/* Username field — only show when editing and user account exists */}
+          {castMember?.username && (
+            <div className="space-y-2">
+              <Label htmlFor="username">Username</Label>
+              <Input
+                id="username"
+                name="username"
+                defaultValue={castMember.username}
+                placeholder="username"
+              />
+              <p className="text-[11px] text-gray-400">
+                This is the login username for this cast member
+              </p>
+            </div>
+          )}
+
           <div className="space-y-2">
             <Label htmlFor="bio">Bio</Label>
             <Textarea
@@ -116,7 +143,7 @@ export function CastForm({ castMember, trigger }: CastFormProps) {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="dayRate">Day Rate ($)</Label>
+              <Label htmlFor="dayRate">Day Rate (MVR)</Label>
               <Input
                 id="dayRate"
                 name="dayRate"

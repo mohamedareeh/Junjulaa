@@ -90,6 +90,9 @@ export default async function CastPage({
                 </Avatar>
                 <div className="min-w-0 flex-1">
                   <p className="text-[13px] font-semibold text-gray-900 truncate">{member.name}</p>
+                  {member.characterName && (
+                    <p className="text-[11px] text-gray-500 truncate">as {member.characterName}</p>
+                  )}
                   {member.dayRate && (
                     <p className="text-[12px] text-gray-400">
                       {formatCurrency(member.dayRate)}

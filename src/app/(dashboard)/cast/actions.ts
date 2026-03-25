@@ -59,6 +59,7 @@ async function ensureUserAccount(name: string, email: string, castMemberId: numb
 
 export async function createCastMember(formData: FormData) {
   const name = formData.get("name") as string;
+  const characterName = (formData.get("characterName") as string) || null;
   const email = (formData.get("email") as string) || null;
   const phone = (formData.get("phone") as string) || null;
   const bio = (formData.get("bio") as string) || null;
@@ -66,7 +67,7 @@ export async function createCastMember(formData: FormData) {
   const paymentType = (formData.get("paymentType") as "one_time" | "per_episode") || "one_time";
 
   const [castMember] = await db.insert(castMembers).values({
-    name, email, phone, bio, dayRate, paymentType,
+    name, characterName, email, phone, bio, dayRate, paymentType,
   }).returning();
 
   if (email) {
@@ -78,17 +79,45 @@ export async function createCastMember(formData: FormData) {
 
 export async function updateCastMember(id: number, formData: FormData) {
   const name = formData.get("name") as string;
+  const characterName = (formData.get("characterName") as string) || null;
   const email = (formData.get("email") as string) || null;
   const phone = (formData.get("phone") as string) || null;
   const bio = (formData.get("bio") as string) || null;
   const dayRate = (formData.get("dayRate") as string) || null;
   const paymentType = (formData.get("paymentType") as "one_time" | "per_episode") || "one_time";
+  const username = (formData.get("username") as string) || null;
 
   await db
     .update(castMembers)
-    .set({ name, email, phone, bio, dayRate, paymentType })
+    .set({ name, characterName, email, phone, bio, dayRate, paymentType })
     .where(eq(castMembers.id, id));
 
+  // Handle username update if provided
+  if (username) {
+    const [member] = await db
+      .select({ userId: castMembers.userId })
+      .from(castMembers)
+      .where(eq(castMembers.id, id))
+      .limit(1);
+
+    if (member?.userId) {
+      // Check username is unique (excluding current user)
+      const [existing] = await db
+        .select({ id: users.id })
+        .from(users)
+        .where(eq(users.username, username))
+        .limit(1);
+
+      if (!existing || existing.id === member.userId) {
+        await db
+          .update(users)
+          .set({ username, name })
+          .where(eq(users.id, member.userId));
+      }
+    }
+  }
+
+  // Create user account if email provided and no account yet
   if (email) {
     const [member] = await db
       .select({ userId: castMembers.userId })

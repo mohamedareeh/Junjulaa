@@ -1,5 +1,5 @@
 import { db } from "@/db";
-import { castMembers, episodeCast, episodes } from "@/db/schema";
+import { castMembers, episodeCast, episodes, users } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { notFound } from "next/navigation";
 import {
@@ -46,7 +46,7 @@ export default async function CastDetailPage({
     notFound();
   }
 
-  let member: CastMember | undefined;
+  let member: (CastMember & { username?: string | null }) | undefined;
   let episodeAppearances: {
     id: number;
     roleName: string;
@@ -69,6 +69,18 @@ export default async function CastDetailPage({
     }
 
     member = result[0];
+
+    // Fetch linked user's username
+    if (member.userId) {
+      const [linkedUser] = await db
+        .select({ username: users.username })
+        .from(users)
+        .where(eq(users.id, member.userId))
+        .limit(1);
+      if (linkedUser) {
+        member = { ...member, username: linkedUser.username };
+      }
+    }
 
     episodeAppearances = await db
       .select({
@@ -104,6 +116,9 @@ export default async function CastDetailPage({
             <span className="text-sm font-medium">{member.name}</span>
           </div>
           <h1 className="text-3xl font-bold tracking-tight">{member.name}</h1>
+          {member.characterName && (
+            <p className="text-sm text-gray-500">Character: {member.characterName}</p>
+          )}
         </div>
         <div className="flex items-center gap-2">
           <CastForm
@@ -152,6 +167,18 @@ export default async function CastDetailPage({
                 {new Date(member.createdAt).toLocaleDateString()}
               </p>
             </div>
+            {member.characterName && (
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Character</p>
+                <p className="text-sm">{member.characterName}</p>
+              </div>
+            )}
+            {member.username && (
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Username</p>
+                <p className="text-sm font-mono">{member.username}</p>
+              </div>
+            )}
             {member.bio && (
               <div className="sm:col-span-2">
                 <p className="text-sm font-medium text-muted-foreground">Bio</p>

@@ -98,6 +98,7 @@ export const episodes = pgTable("episodes", {
 export const castMembers = pgTable("cast_members", {
   id: serial("id").primaryKey(),
   name: varchar("name", { length: 255 }).notNull(),
+  characterName: varchar("character_name", { length: 255 }),
   email: varchar("email", { length: 255 }),
   phone: varchar("phone", { length: 50 }),
   headshotUrl: text("headshot_url"),

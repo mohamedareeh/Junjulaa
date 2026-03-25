@@ -64,10 +64,12 @@ export async function createCastMember(formData: FormData) {
   const phone = (formData.get("phone") as string) || null;
   const bio = (formData.get("bio") as string) || null;
   const dayRate = (formData.get("dayRate") as string) || null;
-  const paymentType = (formData.get("paymentType") as "one_time" | "per_episode") || "one_time";
+  const paymentType = (formData.get("paymentType") as "one_time" | "per_episode") || "per_episode";
+  const episodeCountStr = formData.get("episodeCount") as string;
+  const episodeCount = paymentType === "per_episode" && episodeCountStr ? parseInt(episodeCountStr, 10) : null;
 
   const [castMember] = await db.insert(castMembers).values({
-    name, characterName, email, phone, bio, dayRate, paymentType,
+    name, characterName, email, phone, bio, dayRate, paymentType, episodeCount,
   }).returning();
 
   if (email) {
@@ -84,12 +86,14 @@ export async function updateCastMember(id: number, formData: FormData) {
   const phone = (formData.get("phone") as string) || null;
   const bio = (formData.get("bio") as string) || null;
   const dayRate = (formData.get("dayRate") as string) || null;
-  const paymentType = (formData.get("paymentType") as "one_time" | "per_episode") || "one_time";
+  const paymentType = (formData.get("paymentType") as "one_time" | "per_episode") || "per_episode";
+  const episodeCountStr = formData.get("episodeCount") as string;
+  const episodeCount = paymentType === "per_episode" && episodeCountStr ? parseInt(episodeCountStr, 10) : null;
   const username = (formData.get("username") as string) || null;
 
   await db
     .update(castMembers)
-    .set({ name, characterName, email, phone, bio, dayRate, paymentType })
+    .set({ name, characterName, email, phone, bio, dayRate, paymentType, episodeCount })
     .where(eq(castMembers.id, id));
 
   // Handle username update if provided

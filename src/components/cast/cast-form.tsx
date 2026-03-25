@@ -35,7 +35,7 @@ export function CastForm({ castMember, trigger }: CastFormProps) {
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [paymentType, setPaymentType] = useState(
-    castMember?.paymentType ?? "one_time"
+    castMember?.paymentType ?? "per_episode"
   );
 
   async function handleSubmit(formData: FormData) {
@@ -172,6 +172,24 @@ export function CastForm({ castMember, trigger }: CastFormProps) {
               </Select>
             </div>
           </div>
+
+          {paymentType === "per_episode" && (
+            <div className="space-y-2">
+              <Label htmlFor="episodeCount">Number of Episodes</Label>
+              <Input
+                id="episodeCount"
+                name="episodeCount"
+                type="number"
+                min="1"
+                max="10"
+                defaultValue={castMember?.episodeCount ?? 10}
+                placeholder="How many episodes will they appear in?"
+              />
+              <p className="text-[11px] text-gray-400">
+                Total payment = Rate × number of episodes
+              </p>
+            </div>
+          )}
 
           <DialogFooter>
             <Button type="submit" disabled={isPending}>

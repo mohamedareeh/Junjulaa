@@ -70,7 +70,7 @@ export default async function BudgetPage() {
       .select({
         episodeId: expenses.episodeId,
         category: expenses.category,
-        total: sql<string>`coalesce(sum(case when ${expenses.paymentType} = 'per_episode' then ${expenses.amount} * 10 else ${expenses.amount} end), 0)`,
+        total: sql<string>`coalesce(sum(case when ${expenses.paymentType} = 'per_episode' then ${expenses.amount} * coalesce(${expenses.episodeCount}, 10) else ${expenses.amount} end), 0)`,
       })
       .from(expenses)
       .groupBy(expenses.episodeId, expenses.category);

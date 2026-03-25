@@ -33,6 +33,7 @@ export default async function ExpensesPage({
     date: string | null;
     paymentStatus: string;
     paymentType: string | null;
+    episodeCount: number | null;
     episodeNumber: number | null;
   }[] = [];
   let totals = { total: 0, paid: 0, pending: 0, overdue: 0 };
@@ -73,6 +74,7 @@ export default async function ExpensesPage({
         date: expenses.date,
         paymentStatus: expenses.paymentStatus,
         paymentType: expenses.paymentType,
+        episodeCount: expenses.episodeCount,
         episodeNumber: episodes.number,
       })
       .from(expenses)
@@ -84,7 +86,7 @@ export default async function ExpensesPage({
 
     for (const row of rows) {
       const baseAmt = parseFloat(row.amount);
-      const amt = row.paymentType === "per_episode" ? baseAmt * 10 : baseAmt;
+      const amt = row.paymentType === "per_episode" ? baseAmt * (row.episodeCount ?? 10) : baseAmt;
       totals.total += amt;
       if (row.paymentStatus === "paid") totals.paid += amt;
       else if (row.paymentStatus === "pending") totals.pending += amt;
@@ -163,12 +165,12 @@ export default async function ExpensesPage({
                   <div className="text-right">
                     <p className="text-[13px] font-semibold text-gray-900 tabular-nums">
                       {row.paymentType === "per_episode"
-                        ? formatCurrency((parseFloat(row.amount) * 10).toString())
+                        ? formatCurrency((parseFloat(row.amount) * (row.episodeCount ?? 10)).toString())
                         : formatCurrency(row.amount)}
                     </p>
                     {row.paymentType === "per_episode" && (
                       <p className="text-[10px] text-gray-400">
-                        {formatCurrency(row.amount)} × 10 eps
+                        {formatCurrency(row.amount)} × {row.episodeCount ?? 10} eps
                       </p>
                     )}
                     <Badge
@@ -188,6 +190,7 @@ export default async function ExpensesPage({
                       date: row.date,
                       paymentStatus: row.paymentStatus as "paid" | "pending" | "overdue",
                       paymentType: (row.paymentType ?? "one_time") as "one_time" | "per_episode",
+                      episodeCount: row.episodeCount,
                       receiptUrl: null,
                       createdBy: null,
                       createdAt: new Date(),

@@ -14,7 +14,7 @@ export async function addCastToEpisode(formData: FormData) {
 
   // Auto-create expense for cast payment if they have a day rate
   const [castMember] = await db
-    .select({ name: castMembers.name, dayRate: castMembers.dayRate, paymentType: castMembers.paymentType })
+    .select({ name: castMembers.name, dayRate: castMembers.dayRate, paymentType: castMembers.paymentType, episodeCount: castMembers.episodeCount })
     .from(castMembers)
     .where(eq(castMembers.id, castMemberId))
     .limit(1);
@@ -28,6 +28,7 @@ export async function addCastToEpisode(formData: FormData) {
       amount: castMember.dayRate,
       date: today,
       paymentType: castMember.paymentType,
+      episodeCount: castMember.paymentType === "per_episode" ? (castMember.episodeCount ?? 10) : null,
       paymentStatus: "pending",
     });
     revalidatePath("/expenses");
@@ -50,7 +51,7 @@ export async function addCrewToEpisode(formData: FormData) {
 
   // Auto-create expense for crew payment if they have a day rate
   const [crewMember] = await db
-    .select({ name: crewMembers.name, dayRate: crewMembers.dayRate, paymentType: crewMembers.paymentType, roleTitle: crewMembers.roleTitle })
+    .select({ name: crewMembers.name, dayRate: crewMembers.dayRate, paymentType: crewMembers.paymentType, episodeCount: crewMembers.episodeCount, roleTitle: crewMembers.roleTitle })
     .from(crewMembers)
     .where(eq(crewMembers.id, crewMemberId))
     .limit(1);
@@ -64,6 +65,7 @@ export async function addCrewToEpisode(formData: FormData) {
       amount: crewMember.dayRate,
       date: today,
       paymentType: crewMember.paymentType,
+      episodeCount: crewMember.paymentType === "per_episode" ? (crewMember.episodeCount ?? 10) : null,
       paymentStatus: "pending",
     });
     revalidatePath("/expenses");

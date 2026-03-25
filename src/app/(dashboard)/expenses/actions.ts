@@ -13,6 +13,8 @@ export async function createExpense(formData: FormData) {
   const date = formData.get("date") as string;
   const paymentStatus = formData.get("paymentStatus") as "paid" | "pending" | "overdue";
   const paymentType = formData.get("paymentType") as "one_time" | "per_episode";
+  const episodeCountStr = formData.get("episodeCount") as string;
+  const episodeCount = paymentType === "per_episode" && episodeCountStr ? parseInt(episodeCountStr, 10) : null;
 
   await db.insert(expenses).values({
     episodeId: episodeId ? parseInt(episodeId, 10) : null,
@@ -22,6 +24,7 @@ export async function createExpense(formData: FormData) {
     date: date || null,
     paymentStatus,
     paymentType,
+    episodeCount,
   });
 
   revalidatePath("/expenses");
@@ -36,6 +39,8 @@ export async function updateExpense(id: number, formData: FormData) {
   const date = formData.get("date") as string;
   const paymentStatus = formData.get("paymentStatus") as "paid" | "pending" | "overdue";
   const paymentType = formData.get("paymentType") as "one_time" | "per_episode";
+  const episodeCountStr = formData.get("episodeCount") as string;
+  const episodeCount = paymentType === "per_episode" && episodeCountStr ? parseInt(episodeCountStr, 10) : null;
 
   await db
     .update(expenses)
@@ -47,6 +52,7 @@ export async function updateExpense(id: number, formData: FormData) {
       date: date || null,
       paymentStatus,
       paymentType,
+      episodeCount,
     })
     .where(eq(expenses.id, id));
 

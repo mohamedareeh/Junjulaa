@@ -105,6 +105,7 @@ export const castMembers = pgTable("cast_members", {
   bio: text("bio"),
   dayRate: decimal("day_rate", { precision: 10, scale: 2 }),
   paymentType: paymentTypeEnum("payment_type").notNull().default("per_episode"),
+  episodeCount: integer("episode_count").default(10),
   userId: integer("user_id").references(() => users.id, { onDelete: "set null" }),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
@@ -131,6 +132,7 @@ export const crewMembers = pgTable("crew_members", {
   roleTitle: varchar("role_title", { length: 255 }).notNull(),
   dayRate: decimal("day_rate", { precision: 10, scale: 2 }),
   paymentType: paymentTypeEnum("payment_type").notNull().default("per_episode"),
+  episodeCount: integer("episode_count").default(10),
   userId: integer("user_id").references(() => users.id, { onDelete: "set null" }),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
@@ -157,6 +159,7 @@ export const expenses = pgTable("expenses", {
   date: date("date"),
   receiptUrl: text("receipt_url"),
   paymentType: paymentTypeEnum("payment_type").notNull().default("one_time"),
+  episodeCount: integer("episode_count").default(10),
   paymentStatus: paymentStatusEnum("payment_status")
     .notNull()
     .default("pending"),

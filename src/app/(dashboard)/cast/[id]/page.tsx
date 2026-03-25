@@ -155,7 +155,9 @@ export default async function CastDetailPage({
               </p>
               <p className="text-sm">
                 {member.dayRate
-                  ? `${formatCurrency(member.dayRate)}${member.paymentType === "per_episode" ? "/day (Per Episode)" : " (One-Time)"}`
+                  ? member.paymentType === "per_episode"
+                    ? `${formatCurrency(member.dayRate)}/ep × ${member.episodeCount ?? 10} eps = ${formatCurrency((parseFloat(member.dayRate) * (member.episodeCount ?? 10)).toString())}`
+                    : `${formatCurrency(member.dayRate)} (One-Time)`
                   : "Not set"}
               </p>
             </div>

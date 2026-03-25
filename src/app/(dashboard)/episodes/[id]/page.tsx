@@ -187,7 +187,7 @@ export default async function EpisodeDetailPage({
   const totalExpenses = episode.expenses.reduce(
     (sum, exp) => {
       const base = Number(exp.amount);
-      return sum + (exp.paymentType === "per_episode" ? base * 10 : base);
+      return sum + (exp.paymentType === "per_episode" ? base * (exp.episodeCount ?? 10) : base);
     },
     0
   );
@@ -520,11 +520,11 @@ export default async function EpisodeDetailPage({
                 <div className="text-right shrink-0 ml-3">
                   <p className="text-[13px] font-semibold text-gray-900 tabular-nums">
                     {exp.paymentType === "per_episode"
-                      ? formatCurrency((Number(exp.amount) * 10).toString())
+                      ? formatCurrency((Number(exp.amount) * (exp.episodeCount ?? 10)).toString())
                       : formatCurrency(exp.amount)}
                   </p>
                   {exp.paymentType === "per_episode" && (
-                    <p className="text-[10px] text-gray-400">{formatCurrency(exp.amount)} × 10 eps</p>
+                    <p className="text-[10px] text-gray-400">{formatCurrency(exp.amount)} × {exp.episodeCount ?? 10} eps</p>
                   )}
                 </div>
               </div>

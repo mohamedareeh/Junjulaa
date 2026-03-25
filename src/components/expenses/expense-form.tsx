@@ -273,6 +273,23 @@ export function ExpenseForm({ expense, episodes, categories: initialCategories, 
             </div>
           </div>
 
+          {paymentType === "per_episode" && (
+            <div className="space-y-2">
+              <Label htmlFor="episodeCount">Number of Episodes</Label>
+              <Input
+                id="episodeCount"
+                name="episodeCount"
+                type="number"
+                min="1"
+                max="10"
+                defaultValue={expense?.episodeCount ?? 10}
+              />
+              <p className="text-[11px] text-gray-400">
+                Total = Amount × episodes
+              </p>
+            </div>
+          )}
+
           <DialogFooter>
             <Button type="submit" disabled={isPending}>
               {isPending

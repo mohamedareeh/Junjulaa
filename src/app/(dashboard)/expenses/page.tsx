@@ -7,7 +7,7 @@ import { ExpenseForm } from "@/components/expenses/expense-form";
 import { ExpenseFilters } from "@/components/expenses/expense-filters";
 import { DeleteExpenseButton } from "@/components/expenses/delete-expense-button";
 import { formatCurrency } from "@/lib/format";
-import { Wallet, CheckCircle2, Clock, AlertTriangle } from "lucide-react";
+import { Wallet, CheckCircle2, Clock, AlertTriangle, Pencil } from "lucide-react";
 
 const statusColors: Record<string, string> = {
   paid: "border-emerald-200 bg-emerald-50 text-emerald-700",
@@ -30,7 +30,7 @@ export default async function ExpensesPage({
     category: string;
     description: string;
     amount: string;
-    date: string;
+    date: string | null;
     paymentStatus: string;
     paymentType: string | null;
     episodeNumber: number | null;
@@ -150,7 +150,7 @@ export default async function ExpensesPage({
                 <div className="min-w-0 flex-1">
                   <p className="text-[13px] font-medium text-gray-900 truncate">{row.description}</p>
                   <div className="mt-0.5 flex items-center gap-3 text-[11px] text-gray-400">
-                    <span>{row.date}</span>
+                    <span>{row.date || "No date"}</span>
                     <span>{row.episodeNumber != null ? `Ep ${row.episodeNumber}` : "General"}</span>
                     <span className="capitalize">{row.category.replace("_", " ")}</span>
                     <Badge variant="outline" className="text-[10px] border-gray-200">
@@ -170,6 +170,28 @@ export default async function ExpensesPage({
                       {row.paymentStatus}
                     </Badge>
                   </div>
+                  <ExpenseForm
+                    expense={{
+                      id: row.id,
+                      episodeId: row.episodeId,
+                      category: row.category,
+                      description: row.description,
+                      amount: row.amount,
+                      date: row.date,
+                      paymentStatus: row.paymentStatus as "paid" | "pending" | "overdue",
+                      paymentType: (row.paymentType ?? "one_time") as "one_time" | "per_episode",
+                      receiptUrl: null,
+                      createdBy: null,
+                      createdAt: new Date(),
+                    }}
+                    episodes={allEpisodes}
+                    categories={allCategories}
+                    trigger={
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-400 hover:text-gray-900">
+                        <Pencil className="h-3.5 w-3.5" />
+                      </Button>
+                    }
+                  />
                   <DeleteExpenseButton id={row.id} />
                 </div>
               </div>

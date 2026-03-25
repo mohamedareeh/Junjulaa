@@ -49,7 +49,7 @@ export default async function DashboardPage() {
     category: string;
     amount: string;
     paymentStatus: string;
-    date: string;
+    date: string | null;
     episodeNumber: number | null;
   }[] = [];
   let upcomingShoots: {

@@ -19,12 +19,13 @@ export async function createExpense(formData: FormData) {
     category,
     description,
     amount,
-    date,
+    date: date || null,
     paymentStatus,
     paymentType,
   });
 
   revalidatePath("/expenses");
+  revalidatePath("/");
 }
 
 export async function updateExpense(id: number, formData: FormData) {
@@ -43,13 +44,14 @@ export async function updateExpense(id: number, formData: FormData) {
       category,
       description,
       amount,
-      date,
+      date: date || null,
       paymentStatus,
       paymentType,
     })
     .where(eq(expenses.id, id));
 
   revalidatePath("/expenses");
+  revalidatePath("/");
 }
 
 export async function deleteExpense(id: number) {

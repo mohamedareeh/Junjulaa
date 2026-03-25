@@ -512,7 +512,7 @@ export default async function EpisodeDetailPage({
               <div key={exp.id} className="flex items-center justify-between px-4 py-3 sm:px-5">
                 <div className="min-w-0 flex-1">
                   <p className="text-[13px] font-medium text-gray-900 truncate">{exp.description}</p>
-                  <p className="text-[11px] text-gray-400 capitalize">{exp.category.replace("_", " ")} — {exp.date}</p>
+                  <p className="text-[11px] text-gray-400 capitalize">{exp.category.replace("_", " ")}{exp.date ? ` — ${exp.date}` : ""}</p>
                 </div>
                 <p className="text-[13px] font-semibold text-gray-900 tabular-nums shrink-0 ml-3">
                   {formatCurrency(exp.amount)}

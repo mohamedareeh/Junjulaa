@@ -223,12 +223,11 @@ export function ExpenseForm({ expense, episodes, categories: initialCategories, 
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="date">Date</Label>
+              <Label htmlFor="date">Date (optional)</Label>
               <Input
                 id="date"
                 name="date"
                 type="date"
-                required
                 defaultValue={expense?.date ?? ""}
               />
             </div>

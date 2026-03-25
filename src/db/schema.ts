@@ -153,7 +153,7 @@ export const expenses = pgTable("expenses", {
   category: varchar("category", { length: 100 }).notNull(),
   description: text("description").notNull(),
   amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
-  date: date("date").notNull(),
+  date: date("date"),
   receiptUrl: text("receipt_url"),
   paymentType: paymentTypeEnum("payment_type").notNull().default("one_time"),
   paymentStatus: paymentStatusEnum("payment_status")
